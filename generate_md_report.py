@@ -21,7 +21,7 @@ DOMAIN = "simmihur.amocrm.ru"
 
 PIPELINE_ID   = 11095182   # Money-Dick
 UTM_SOURCE_FIELD_ID  = 1323539
-MD_LAST_EVENT_FIELD_ID = 1323553
+MD_AB_VARIANT_FIELD_ID = 1323575
 
 # July 23, 2026 00:00 MSK = July 22 21:00 UTC
 CREATED_FROM = 1753228800
@@ -122,13 +122,13 @@ def calc_stats(leads):
 
     utm_sorted = utm_counter.most_common()
 
-    # Graph 3: MD Last Event (landing version)
+    # Graph 3: MD A/B Variant (landing version)
     version_counter = Counter()
     for lead in active_leads:
-        event = get_custom_field(lead, MD_LAST_EVENT_FIELD_ID)
-        if event == "part_1_opened":
+        variant = get_custom_field(lead, MD_AB_VARIANT_FIELD_ID)
+        if variant == "A":
             version_counter["1 версия"] += 1
-        elif event == "part_2_opened":
+        elif variant == "B":
             version_counter["2 версия"] += 1
         else:
             version_counter["Не определено"] += 1
@@ -288,7 +288,7 @@ def build_html(stats):
   </div>
 
   <div class="card">
-    <h2>Версия лендинга (MD Last Event)</h2>
+    <h2>Версия лендинга (MD A/B Variant)</h2>
     <div class="chart-wrap" style="height:280px">
       <canvas id="versionChart"></canvas>
     </div>
