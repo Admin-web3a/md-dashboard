@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="refresh" content="3600">
+<title>Money-Dick Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0f0f0f;
+    --card: #1a1a1a;
+    --border: #2a2a2a;
+    --text: #e8e8e8;
+    --sub: #888;
+    --accent: #6c63ff;
+    --green: #4caf50;
+    --orange: #ff9800;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    padding: 24px 20px;
+  }
+  h1 {
+    text-align: center;
+    font-size: 1.5rem;
+    margin-bottom: 4px;
+  }
+  .subtitle {
+    text-align: center;
+    color: var(--sub);
+    font-size: .85rem;
+    margin-bottom: 28px;
+  }
+  .stat-row {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 32px;
+  }
+  .stat {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 24px;
+    text-align: center;
+    min-width: 140px;
+  }
+  .stat .val {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--accent);
+  }
+  .stat .lbl {
+    font-size: .8rem;
+    color: var(--sub);
+    margin-top: 4px;
+  }
+  .charts {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+  }
+  .card h2 {
+    font-size: 1rem;
+    margin-bottom: 16px;
+    color: var(--text);
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .chart-wrap {
+    position: relative;
+  }
+  .footer {
+    text-align: center;
+    color: var(--sub);
+    font-size: .75rem;
+    margin-top: 32px;
+  }
+</style>
+</head>
+<body>
+
+<h1>📊 Money-Dick Dashboard</h1>
+<p class="subtitle">Воронка с 23 июля 2026 · Обновлено: 23.07.2026 12:13 МСК</p>
+
+<div class="stat-row">
+  <div class="stat">
+    <div class="val">15</div>
+    <div class="lbl">Всего лидов</div>
+  </div>
+  <div class="stat">
+    <div class="val" style="color:var(--green)">0</div>
+    <div class="lbl">Оплатили</div>
+  </div>
+  <div class="stat">
+    <div class="val" style="color:var(--orange)">0.0%</div>
+    <div class="lbl">Конверсия в оплату</div>
+  </div>
+</div>
+
+<div class="charts">
+
+  <div class="card">
+    <h2>Воронка: сколько лидов прошли через каждый этап</h2>
+    <div class="chart-wrap" style="height:420px">
+      <canvas id="funnelChart"></canvas>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Распределение по UTM Source</h2>
+    <div class="chart-wrap" style="height:300px">
+      <canvas id="utmChart"></canvas>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Версия лендинга (MD Last Event)</h2>
+    <div class="chart-wrap" style="height:280px">
+      <canvas id="versionChart"></canvas>
+    </div>
+  </div>
+
+</div>
+
+<p class="footer">Данные из amoCRM · автообновление каждый час</p>
+
+<script>
+const PURPLE  = 'rgba(108,99,255,0.85)';
+const GREEN   = 'rgba(76,175,80,0.85)';
+const ORANGE  = 'rgba(255,152,0,0.85)';
+const BLUE    = 'rgba(33,150,243,0.85)';
+const PINK    = 'rgba(233,30,99,0.85)';
+const TEAL    = 'rgba(0,188,212,0.85)';
+
+const PALETTE = [PURPLE, BLUE, GREEN, ORANGE, PINK, TEAL,
+  'rgba(255,235,59,.85)', 'rgba(121,85,72,.85)', 'rgba(96,125,139,.85)',
+  'rgba(244,67,54,.85)', 'rgba(156,39,176,.85)', 'rgba(3,169,244,.85)'];
+
+Chart.defaults.color = '#888';
+Chart.defaults.borderColor = '#2a2a2a';
+
+// Chart 1 — Funnel (horizontal bar)
+new Chart(document.getElementById('funnelChart'), {
+  type: 'bar',
+  data: {
+    labels: ["Лид Создан", "Часть 1 открыта", "Часть 1 прочитана", "Часть 2 открыта", "Часть 2 прочитана", "Часть 3 открыта", "Часть 3 прочитана", "Увидел оффер", "Тариф выбран", "Checkout открыт", "Данные checkout отправлены", "Payment intent created", "Платёжная форма готова", "Оплата не прошла", "Оплачено", "Успешно реализовано"],
+    datasets: [{
+      label: 'Лидов прошло через этап',
+      data: [15, 15, 8, 7, 6, 6, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0],
+      backgroundColor: PURPLE,
+      borderRadius: 4,
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: ctx => ` ${ctx.parsed.x} лидов`
+        }
+      }
+    },
+    scales: {
+      x: { beginAtZero: true, grid: { color: '#2a2a2a' } },
+      y: { grid: { display: false } }
+    }
+  }
+});
+
+// Chart 2 — UTM Source (bar)
+new Chart(document.getElementById('utmChart'), {
+  type: 'bar',
+  data: {
+    labels: ["fb", "yt"],
+    datasets: [{
+      label: 'Лидов',
+      data: [13, 2],
+      backgroundColor: ["fb", "yt"].map((_, i) => PALETTE[i % PALETTE.length]),
+      borderRadius: 4,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: ctx => ` ${ctx.parsed.y} лидов`
+        }
+      }
+    },
+    scales: {
+      y: { beginAtZero: true, grid: { color: '#2a2a2a' } },
+      x: { grid: { display: false } }
+    }
+  }
+});
+
+// Chart 3 — Landing version (pie)
+const verLabels = ["Не определено", "1 версия", "2 версия"];
+const verColors = verLabels.map((l, i) => {
+  if (l === '1 версия') return GREEN;
+  if (l === '2 версия') return BLUE;
+  return 'rgba(136,136,136,.85)';
+});
+new Chart(document.getElementById('versionChart'), {
+  type: 'pie',
+  data: {
+    labels: verLabels,
+    datasets: [{
+      data: [7, 7, 1],
+      backgroundColor: verColors,
+      borderColor: '#1a1a1a',
+      borderWidth: 2,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'right',
+        labels: { color: '#e8e8e8', padding: 16 }
+      },
+      tooltip: {
+        callbacks: {
+          label: ctx => ` ${ctx.label}: ${ctx.parsed} лидов (${(ctx.parsed / ctx.dataset.data.reduce((a,b)=>a+b,0)*100).toFixed(1)}%)`
+        }
+      }
+    }
+  }
+});
+</script>
+</body>
+</html>
