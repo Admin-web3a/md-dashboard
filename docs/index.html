@@ -94,11 +94,11 @@
 <body>
 
 <h1>📊 Money-Dick Dashboard</h1>
-<p class="subtitle">Воронка с 23 июля 2026 · Обновлено: 23.07.2026 12:13 МСК</p>
+<p class="subtitle">Воронка с 23 июля 2026 · Обновлено: 23.07.2026 12:46 МСК</p>
 
 <div class="stat-row">
   <div class="stat">
-    <div class="val">15</div>
+    <div class="val">16</div>
     <div class="lbl">Всего лидов</div>
   </div>
   <div class="stat">
@@ -160,7 +160,7 @@ new Chart(document.getElementById('funnelChart'), {
     labels: ["Лид Создан", "Часть 1 открыта", "Часть 1 прочитана", "Часть 2 открыта", "Часть 2 прочитана", "Часть 3 открыта", "Часть 3 прочитана", "Увидел оффер", "Тариф выбран", "Checkout открыт", "Данные checkout отправлены", "Payment intent created", "Платёжная форма готова", "Оплата не прошла", "Оплачено", "Успешно реализовано"],
     datasets: [{
       label: 'Лидов прошло через этап',
-      data: [15, 15, 8, 7, 6, 6, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0],
+      data: [16, 16, 9, 8, 6, 6, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0],
       backgroundColor: PURPLE,
       borderRadius: 4,
     }]
@@ -191,7 +191,7 @@ new Chart(document.getElementById('utmChart'), {
     labels: ["fb", "yt"],
     datasets: [{
       label: 'Лидов',
-      data: [13, 2],
+      data: [13, 3],
       backgroundColor: ["fb", "yt"].map((_, i) => PALETTE[i % PALETTE.length]),
       borderRadius: 4,
     }]
@@ -226,7 +226,7 @@ new Chart(document.getElementById('versionChart'), {
   data: {
     labels: verLabels,
     datasets: [{
-      data: [7, 7, 1],
+      data: [7, 7, 2],
       backgroundColor: verColors,
       borderColor: '#1a1a1a',
       borderWidth: 2,
