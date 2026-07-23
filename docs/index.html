@@ -8,13 +8,13 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 <style>
   :root {
-    --bg: #0f0f0f;
-    --card: #1a1a1a;
+    --bg:     #0f0f0f;
+    --card:   #1a1a1a;
     --border: #2a2a2a;
-    --text: #e8e8e8;
-    --sub: #888;
+    --text:   #e8e8e8;
+    --sub:    #888;
     --accent: #6c63ff;
-    --green: #4caf50;
+    --green:  #4caf50;
     --orange: #ff9800;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -24,17 +24,43 @@
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     padding: 24px 20px;
   }
-  h1 {
-    text-align: center;
-    font-size: 1.5rem;
-    margin-bottom: 4px;
-  }
-  .subtitle {
-    text-align: center;
-    color: var(--sub);
-    font-size: .85rem;
+  h1 { text-align: center; font-size: 1.5rem; margin-bottom: 4px; }
+  .subtitle { text-align: center; color: var(--sub); font-size: .85rem; margin-bottom: 20px; }
+
+  /* ── Date filter ── */
+  .filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
     margin-bottom: 28px;
   }
+  .preset-btn {
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--sub);
+    border-radius: 6px;
+    padding: 6px 14px;
+    font-size: .85rem;
+    cursor: pointer;
+    transition: border-color .15s, color .15s;
+  }
+  .preset-btn:hover { border-color: var(--accent); color: var(--text); }
+  .preset-btn.active { border-color: var(--accent); color: var(--accent); background: #1e1b3a; }
+  .date-sep { color: var(--sub); font-size: .85rem; }
+  input[type=date] {
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 6px;
+    padding: 5px 10px;
+    font-size: .85rem;
+    cursor: pointer;
+  }
+  input[type=date]:focus { outline: none; border-color: var(--accent); }
+
+  /* ── Stats ── */
   .stat-row {
     display: flex;
     justify-content: center;
@@ -50,23 +76,11 @@
     text-align: center;
     min-width: 140px;
   }
-  .stat .val {
-    font-size: 2rem;
-    font-weight: 700;
-    color: var(--accent);
-  }
-  .stat .lbl {
-    font-size: .8rem;
-    color: var(--sub);
-    margin-top: 4px;
-  }
-  .charts {
-    display: flex;
-    flex-direction: column;
-    gap: 28px;
-    max-width: 1000px;
-    margin: 0 auto;
-  }
+  .stat .val { font-size: 2rem; font-weight: 700; color: var(--accent); }
+  .stat .lbl { font-size: .8rem; color: var(--sub); margin-top: 4px; }
+
+  /* ── Charts ── */
+  .charts { display: flex; flex-direction: column; gap: 28px; max-width: 1000px; margin: 0 auto; }
   .card {
     background: var(--card);
     border: 1px solid var(--border);
@@ -80,9 +94,6 @@
     padding-bottom: 10px;
     border-bottom: 1px solid var(--border);
   }
-  .chart-wrap {
-    position: relative;
-  }
   .footer {
     text-align: center;
     color: var(--sub);
@@ -94,160 +105,202 @@
 <body>
 
 <h1>📊 Money-Dick Dashboard</h1>
-<p class="subtitle">Воронка с 23 июля 2026 · Обновлено: 23.07.2026 13:01 МСК</p>
+<p class="subtitle">Обновлено: 23.07.2026 13:26 МСК</p>
 
+<!-- Date filter -->
+<div class="filter-bar">
+  <button class="preset-btn" data-preset="today">Сегодня</button>
+  <button class="preset-btn" data-preset="7d">7 дней</button>
+  <button class="preset-btn active" data-preset="30d">30 дней</button>
+  <button class="preset-btn" data-preset="all">Весь период</button>
+  <span class="date-sep">|</span>
+  <input type="date" id="dateFrom">
+  <span class="date-sep">—</span>
+  <input type="date" id="dateTo">
+</div>
+
+<!-- Summary -->
 <div class="stat-row">
-  <div class="stat">
-    <div class="val">16</div>
-    <div class="lbl">Всего лидов</div>
-  </div>
-  <div class="stat">
-    <div class="val" style="color:var(--green)">0</div>
-    <div class="lbl">Оплатили</div>
-  </div>
-  <div class="stat">
-    <div class="val" style="color:var(--orange)">0.0%</div>
-    <div class="lbl">Конверсия в оплату</div>
-  </div>
+  <div class="stat"><div class="val" id="statTotal">—</div><div class="lbl">Всего лидов</div></div>
+  <div class="stat"><div class="val" id="statPaid" style="color:var(--green)">—</div><div class="lbl">Оплатили</div></div>
+  <div class="stat"><div class="val" id="statConv" style="color:var(--orange)">—</div><div class="lbl">Конверсия в оплату</div></div>
 </div>
 
 <div class="charts">
-
   <div class="card">
     <h2>Воронка: сколько лидов прошли через каждый этап</h2>
-    <div class="chart-wrap" style="height:420px">
-      <canvas id="funnelChart"></canvas>
-    </div>
+    <div style="position:relative;height:420px"><canvas id="funnelChart"></canvas></div>
   </div>
-
   <div class="card">
     <h2>Распределение по UTM Source</h2>
-    <div class="chart-wrap" style="height:300px">
-      <canvas id="utmChart"></canvas>
-    </div>
+    <div style="position:relative;height:300px"><canvas id="utmChart"></canvas></div>
   </div>
-
   <div class="card">
     <h2>Версия лендинга (MD A/B Variant)</h2>
-    <div class="chart-wrap" style="height:280px">
-      <canvas id="versionChart"></canvas>
-    </div>
+    <div style="position:relative;height:280px"><canvas id="versionChart"></canvas></div>
   </div>
-
 </div>
 
 <p class="footer">Данные из amoCRM · автообновление каждый час</p>
 
 <script>
-const PURPLE  = 'rgba(108,99,255,0.85)';
-const GREEN   = 'rgba(76,175,80,0.85)';
-const ORANGE  = 'rgba(255,152,0,0.85)';
-const BLUE    = 'rgba(33,150,243,0.85)';
-const PINK    = 'rgba(233,30,99,0.85)';
-const TEAL    = 'rgba(0,188,212,0.85)';
+// ── Raw data embedded by Python ──────────────────────────────────────────────
+const ALL_LEADS   = [{"c":1784662767,"s":7,"u":"yt","v":"B"},{"c":1784752156,"s":1,"u":"fb","v":"A"},{"c":1784757592,"s":1,"u":"fb","v":"A"},{"c":1784767530,"s":7,"u":"yt","v":"B"},{"c":1784775964,"s":3,"u":"fb","v":"B"},{"c":1784784315,"s":1,"u":"fb","v":"A"},{"c":1784786094,"s":1,"u":"fb","v":"A"},{"c":1784788767,"s":1,"u":"fb","v":"A"},{"c":1784789178,"s":2,"u":"fb","v":"B"},{"c":1784791774,"s":1,"u":"fb","v":"A"},{"c":1784787825,"s":7,"u":"fb","v":"B"},{"c":1784790853,"s":7,"u":"fb","v":"B"},{"c":1784781783,"s":5,"u":"fb","v":"A"},{"c":1784796385,"s":1,"u":"fb","v":"B"},{"c":1784794577,"s":5,"u":"fb","v":"B"},{"c":1784798093,"s":3,"u":"yt","v":"A"}];
+const STAGE_NAMES = ["Лид Создан", "Часть 1 открыта", "Часть 1 прочитана", "Часть 2 открыта", "Часть 2 прочитана", "Часть 3 открыта", "Часть 3 прочитана", "Увидел оффер", "Тариф выбран", "Checkout открыт", "Данные checkout отправлены", "Payment intent created", "Платёжная форма готова", "Оплата не прошла", "Оплачено", "Успешно реализовано"];
+const DATA_FROM   = 1753228800;  // earliest possible lead unix ts
 
-const PALETTE = [PURPLE, BLUE, GREEN, ORANGE, PINK, TEAL,
-  'rgba(255,235,59,.85)', 'rgba(121,85,72,.85)', 'rgba(96,125,139,.85)',
-  'rgba(244,67,54,.85)', 'rgba(156,39,176,.85)', 'rgba(3,169,244,.85)'];
+// ── Colors ───────────────────────────────────────────────────────────────────
+const C = {
+  purple: 'rgba(108,99,255,0.85)',
+  green:  'rgba(76,175,80,0.85)',
+  blue:   'rgba(33,150,243,0.85)',
+  orange: 'rgba(255,152,0,0.85)',
+  pink:   'rgba(233,30,99,0.85)',
+  teal:   'rgba(0,188,212,0.85)',
+};
+const PALETTE = [C.purple, C.blue, C.green, C.orange, C.pink, C.teal,
+  'rgba(255,235,59,.85)','rgba(121,85,72,.85)','rgba(96,125,139,.85)',
+  'rgba(244,67,54,.85)','rgba(156,39,176,.85)','rgba(3,169,244,.85)'];
 
 Chart.defaults.color = '#888';
 Chart.defaults.borderColor = '#2a2a2a';
 
-// Chart 1 — Funnel (horizontal bar)
-new Chart(document.getElementById('funnelChart'), {
+// ── Chart instances ──────────────────────────────────────────────────────────
+const funnelChart = new Chart(document.getElementById('funnelChart'), {
   type: 'bar',
-  data: {
-    labels: ["Лид Создан", "Часть 1 открыта", "Часть 1 прочитана", "Часть 2 открыта", "Часть 2 прочитана", "Часть 3 открыта", "Часть 3 прочитана", "Увидел оффер", "Тариф выбран", "Checkout открыт", "Данные checkout отправлены", "Payment intent created", "Платёжная форма готова", "Оплата не прошла", "Оплачено", "Успешно реализовано"],
-    datasets: [{
-      label: 'Лидов прошло через этап',
-      data: [16, 16, 9, 8, 6, 6, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0],
-      backgroundColor: PURPLE,
-      borderRadius: 4,
-    }]
-  },
+  data: { labels: STAGE_NAMES, datasets: [{ label: 'Лидов прошло через этап', data: [], backgroundColor: C.purple, borderRadius: 4 }] },
   options: {
-    indexAxis: 'y',
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: { display: false },
-      tooltip: {
-        callbacks: {
-          label: ctx => ` ${ctx.parsed.x} лидов`
-        }
-      }
-    },
-    scales: {
-      x: { beginAtZero: true, grid: { color: '#2a2a2a' } },
-      y: { grid: { display: false } }
-    }
+    indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.x} лидов` } } },
+    scales: { x: { beginAtZero: true, grid: { color: '#2a2a2a' } }, y: { grid: { display: false } } }
   }
 });
 
-// Chart 2 — UTM Source (bar)
-new Chart(document.getElementById('utmChart'), {
+const utmChart = new Chart(document.getElementById('utmChart'), {
   type: 'bar',
-  data: {
-    labels: ["fb", "yt"],
-    datasets: [{
-      label: 'Лидов',
-      data: [13, 3],
-      backgroundColor: ["fb", "yt"].map((_, i) => PALETTE[i % PALETTE.length]),
-      borderRadius: 4,
-    }]
-  },
+  data: { labels: [], datasets: [{ label: 'Лидов', data: [], backgroundColor: [], borderRadius: 4 }] },
   options: {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: { display: false },
-      tooltip: {
-        callbacks: {
-          label: ctx => ` ${ctx.parsed.y} лидов`
-        }
-      }
-    },
-    scales: {
-      y: { beginAtZero: true, grid: { color: '#2a2a2a' } },
-      x: { grid: { display: false } }
-    }
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.y} лидов` } } },
+    scales: { y: { beginAtZero: true, grid: { color: '#2a2a2a' } }, x: { grid: { display: false } } }
   }
 });
 
-// Chart 3 — Landing version (pie)
-const verLabels = ["2 версия", "1 версия"];
-const verColors = verLabels.map((l, i) => {
-  if (l === '1 версия') return GREEN;
-  if (l === '2 версия') return BLUE;
-  return 'rgba(136,136,136,.85)';
-});
-new Chart(document.getElementById('versionChart'), {
+const versionChart = new Chart(document.getElementById('versionChart'), {
   type: 'pie',
-  data: {
-    labels: verLabels,
-    datasets: [{
-      data: [8, 8],
-      backgroundColor: verColors,
-      borderColor: '#1a1a1a',
-      borderWidth: 2,
-    }]
-  },
+  data: { labels: [], datasets: [{ data: [], backgroundColor: [], borderColor: '#1a1a1a', borderWidth: 2 }] },
   options: {
-    responsive: true,
-    maintainAspectRatio: false,
+    responsive: true, maintainAspectRatio: false,
     plugins: {
-      legend: {
-        position: 'right',
-        labels: { color: '#e8e8e8', padding: 16 }
-      },
-      tooltip: {
-        callbacks: {
-          label: ctx => ` ${ctx.label}: ${ctx.parsed} лидов (${(ctx.parsed / ctx.dataset.data.reduce((a,b)=>a+b,0)*100).toFixed(1)}%)`
-        }
-      }
+      legend: { position: 'right', labels: { color: '#e8e8e8', padding: 16 } },
+      tooltip: { callbacks: { label: ctx => {
+        const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+        return ` ${ctx.label}: ${ctx.parsed} лидов (${(ctx.parsed / total * 100).toFixed(1)}%)`;
+      } } }
     }
   }
 });
+
+// ── Filtering & rendering ────────────────────────────────────────────────────
+function toMidnightTs(dateStr) {
+  // dateStr: "YYYY-MM-DD", returns unix ts at 00:00:00 UTC+3
+  const [y, m, d] = dateStr.split('-').map(Number);
+  return Date.UTC(y, m - 1, d) / 1000 - 3 * 3600;
+}
+
+function todayStr() {
+  return new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Moscow' });
+}
+
+function nDaysAgoStr(n) {
+  const d = new Date();
+  d.setDate(d.getDate() - n + 1);
+  return d.toLocaleDateString('sv-SE', { timeZone: 'Europe/Moscow' });
+}
+
+function applyFilter() {
+  const from = toMidnightTs(document.getElementById('dateFrom').value);
+  const toStr = document.getElementById('dateTo').value;
+  // end of day = next day 00:00 minus 1 sec
+  const to   = toMidnightTs(toStr) + 86399;
+  render(ALL_LEADS.filter(l => l.c >= from && l.c <= to));
+}
+
+function render(leads) {
+  const n = leads.length;
+
+  // Funnel: for each stage i, count leads with status_idx >= i
+  const funnelData = STAGE_NAMES.map((_, i) => leads.filter(l => l.s >= i).length);
+  const paid = funnelData[funnelData.length - 1] || 0;
+
+  document.getElementById('statTotal').textContent = n;
+  document.getElementById('statPaid').textContent  = paid;
+  document.getElementById('statConv').textContent  = n ? (paid / n * 100).toFixed(1) + '%' : '—';
+
+  funnelChart.data.datasets[0].data = funnelData;
+  funnelChart.update();
+
+  // UTM Source
+  const utmMap = {};
+  leads.forEach(l => { utmMap[l.u || '(не указан)'] = (utmMap[l.u || '(не указан)'] || 0) + 1; });
+  const utmSorted = Object.entries(utmMap).sort((a, b) => b[1] - a[1]);
+  utmChart.data.labels = utmSorted.map(e => e[0]);
+  utmChart.data.datasets[0].data = utmSorted.map(e => e[1]);
+  utmChart.data.datasets[0].backgroundColor = utmSorted.map((_, i) => PALETTE[i % PALETTE.length]);
+  utmChart.update();
+
+  // A/B Variant
+  const verMap = { '1 версия': 0, '2 версия': 0, 'Не определено': 0 };
+  leads.forEach(l => {
+    if (l.v === 'A')      verMap['1 версия']++;
+    else if (l.v === 'B') verMap['2 версия']++;
+    else                  verMap['Не определено']++;
+  });
+  const verEntries = Object.entries(verMap).filter(e => e[1] > 0);
+  versionChart.data.labels = verEntries.map(e => e[0]);
+  versionChart.data.datasets[0].data = verEntries.map(e => e[1]);
+  versionChart.data.datasets[0].backgroundColor = verEntries.map(e =>
+    e[0] === '1 версия' ? C.green : e[0] === '2 версия' ? C.blue : 'rgba(136,136,136,.85)'
+  );
+  versionChart.update();
+}
+
+// ── Preset buttons ───────────────────────────────────────────────────────────
+document.querySelectorAll('.preset-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const today = todayStr();
+    const preset = btn.dataset.preset;
+    if (preset === 'today') {
+      document.getElementById('dateFrom').value = today;
+      document.getElementById('dateTo').value   = today;
+    } else if (preset === '7d') {
+      document.getElementById('dateFrom').value = nDaysAgoStr(7);
+      document.getElementById('dateTo').value   = today;
+    } else if (preset === '30d') {
+      document.getElementById('dateFrom').value = nDaysAgoStr(30);
+      document.getElementById('dateTo').value   = today;
+    } else {
+      // All time — from DATA_FROM
+      const d = new Date(DATA_FROM * 1000);
+      document.getElementById('dateFrom').value = d.toLocaleDateString('sv-SE', { timeZone: 'Europe/Moscow' });
+      document.getElementById('dateTo').value   = today;
+    }
+    applyFilter();
+  });
+});
+
+// Manual date change clears preset highlight
+['dateFrom', 'dateTo'].forEach(id => {
+  document.getElementById(id).addEventListener('change', () => {
+    document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+    applyFilter();
+  });
+});
+
+// ── Init: trigger "30 days" preset ──────────────────────────────────────────
+document.querySelector('[data-preset="30d"]').click();
 </script>
 </body>
 </html>
