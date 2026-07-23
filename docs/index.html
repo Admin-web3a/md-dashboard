@@ -94,7 +94,7 @@
 <body>
 
 <h1>📊 Money-Dick Dashboard</h1>
-<p class="subtitle">Воронка с 23 июля 2026 · Обновлено: 23.07.2026 12:46 МСК</p>
+<p class="subtitle">Воронка с 23 июля 2026 · Обновлено: 23.07.2026 13:01 МСК</p>
 
 <div class="stat-row">
   <div class="stat">
@@ -128,7 +128,7 @@
   </div>
 
   <div class="card">
-    <h2>Версия лендинга (MD Last Event)</h2>
+    <h2>Версия лендинга (MD A/B Variant)</h2>
     <div class="chart-wrap" style="height:280px">
       <canvas id="versionChart"></canvas>
     </div>
@@ -215,7 +215,7 @@ new Chart(document.getElementById('utmChart'), {
 });
 
 // Chart 3 — Landing version (pie)
-const verLabels = ["Не определено", "1 версия", "2 версия"];
+const verLabels = ["2 версия", "1 версия"];
 const verColors = verLabels.map((l, i) => {
   if (l === '1 версия') return GREEN;
   if (l === '2 версия') return BLUE;
@@ -226,7 +226,7 @@ new Chart(document.getElementById('versionChart'), {
   data: {
     labels: verLabels,
     datasets: [{
-      data: [7, 7, 2],
+      data: [8, 8],
       backgroundColor: verColors,
       borderColor: '#1a1a1a',
       borderWidth: 2,
