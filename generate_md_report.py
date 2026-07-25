@@ -261,6 +261,7 @@ def build_html(leads_raw):
   </div>
   <div class="card">
     <h2>Версия лендинга (MD A/B Variant)</h2>
+    <div id="sourceFilterBar" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px"></div>
     <div style="position:relative;height:280px"><canvas id="versionChart"></canvas></div>
   </div>
 </div>
@@ -351,6 +352,8 @@ function applyFilter() {{
 }}
 
 function render(leads) {{
+  currentLeads = leads;
+  buildSourceButtons(leads);
   const n = leads.length;
 
   // Funnel: for each stage i, count leads with status_idx >= i
@@ -373,20 +376,7 @@ function render(leads) {{
   utmChart.data.datasets[0].backgroundColor = utmSorted.map((_, i) => PALETTE[i % PALETTE.length]);
   utmChart.update();
 
-  // A/B Variant
-  const verMap = {{ '1 версия': 0, '2 версия': 0, 'Не определено': 0 }};
-  leads.forEach(l => {{
-    if (l.v === 'A')      verMap['1 версия']++;
-    else if (l.v === 'B') verMap['2 версия']++;
-    else                  verMap['Не определено']++;
-  }});
-  const verEntries = Object.entries(verMap).filter(e => e[1] > 0);
-  versionChart.data.labels = verEntries.map(e => e[0]);
-  versionChart.data.datasets[0].data = verEntries.map(e => e[1]);
-  versionChart.data.datasets[0].backgroundColor = verEntries.map(e =>
-    e[0] === '1 версия' ? C.green : e[0] === '2 версия' ? C.blue : 'rgba(136,136,136,.85)'
-  );
-  versionChart.update();
+  renderVersionChart(leads);
 }}
 
 // ── Preset buttons ───────────────────────────────────────────────────────────
@@ -422,6 +412,51 @@ document.querySelectorAll('.preset-btn').forEach(btn => {{
     applyFilter();
   }});
 }});
+
+// ── Source filter for version chart ─────────────────────────────────────────
+let activeSource = '__all__';
+
+function buildSourceButtons(leads) {{
+  const sources = [...new Set(leads.map(l => l.u || '(не указан)'))].sort();
+  const bar = document.getElementById('sourceFilterBar');
+  bar.innerHTML = '';
+
+  ['__all__', ...sources].forEach(src => {{
+    const btn = document.createElement('button');
+    btn.className = 'preset-btn' + (src === activeSource ? ' active' : '');
+    btn.textContent = src === '__all__' ? 'Все источники' : src;
+    btn.dataset.src = src;
+    btn.addEventListener('click', () => {{
+      activeSource = src;
+      bar.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderVersionChart(currentLeads);
+    }});
+    bar.appendChild(btn);
+  }});
+}}
+
+let currentLeads = [];
+
+function renderVersionChart(leads) {{
+  const filtered = activeSource === '__all__'
+    ? leads
+    : leads.filter(l => (l.u || '(не указан)') === activeSource);
+
+  const verMap = {{ '1 версия': 0, '2 версия': 0, 'Не определено': 0 }};
+  filtered.forEach(l => {{
+    if (l.v === 'A')      verMap['1 версия']++;
+    else if (l.v === 'B') verMap['2 версия']++;
+    else                  verMap['Не определено']++;
+  }});
+  const verEntries = Object.entries(verMap).filter(e => e[1] > 0);
+  versionChart.data.labels = verEntries.map(e => e[0]);
+  versionChart.data.datasets[0].data = verEntries.map(e => e[1]);
+  versionChart.data.datasets[0].backgroundColor = verEntries.map(e =>
+    e[0] === '1 версия' ? C.green : e[0] === '2 версия' ? C.blue : 'rgba(136,136,136,.85)'
+  );
+  versionChart.update();
+}}
 
 // ── Init: trigger "30 days" preset ──────────────────────────────────────────
 document.querySelector('[data-preset="30d"]').click();
