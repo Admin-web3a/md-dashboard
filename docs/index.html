@@ -29,85 +29,80 @@
 
   /* ── Date filter ── */
   .filter-bar {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 28px;
+    display: flex; flex-wrap: wrap; justify-content: center;
+    align-items: center; gap: 8px; margin-bottom: 28px;
   }
   .preset-btn {
-    background: var(--card);
-    border: 1px solid var(--border);
-    color: var(--sub);
-    border-radius: 6px;
-    padding: 6px 14px;
-    font-size: .85rem;
-    cursor: pointer;
-    transition: border-color .15s, color .15s;
+    background: var(--card); border: 1px solid var(--border);
+    color: var(--sub); border-radius: 6px; padding: 6px 14px;
+    font-size: .85rem; cursor: pointer; transition: border-color .15s, color .15s;
   }
   .preset-btn:hover { border-color: var(--accent); color: var(--text); }
   .preset-btn.active { border-color: var(--accent); color: var(--accent); background: #1e1b3a; }
   .date-sep { color: var(--sub); font-size: .85rem; }
   input[type=date] {
-    background: var(--card);
-    border: 1px solid var(--border);
-    color: var(--text);
-    border-radius: 6px;
-    padding: 5px 10px;
-    font-size: .85rem;
-    cursor: pointer;
+    background: var(--card); border: 1px solid var(--border);
+    color: var(--text); border-radius: 6px; padding: 5px 10px;
+    font-size: .85rem; cursor: pointer;
   }
   input[type=date]:focus { outline: none; border-color: var(--accent); }
 
   /* ── Stats ── */
   .stat-row {
-    display: flex;
-    justify-content: center;
-    gap: 16px;
-    flex-wrap: wrap;
-    margin-bottom: 32px;
+    display: flex; justify-content: center; gap: 16px;
+    flex-wrap: wrap; margin-bottom: 32px;
   }
   .stat {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 14px 24px;
-    text-align: center;
-    min-width: 140px;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px 24px; text-align: center; min-width: 140px;
   }
   .stat .val { font-size: 2rem; font-weight: 700; color: var(--accent); }
   .stat .lbl { font-size: .8rem; color: var(--sub); margin-top: 4px; }
 
-  /* ── Charts ── */
+  /* ── Cards & charts ── */
   .charts { display: flex; flex-direction: column; gap: 28px; max-width: 1000px; margin: 0 auto; }
   .card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px 24px;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 20px 24px;
   }
   .card h2 {
-    font-size: 1rem;
-    margin-bottom: 16px;
-    color: var(--text);
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--border);
+    font-size: 1rem; margin-bottom: 16px; color: var(--text);
+    padding-bottom: 10px; border-bottom: 1px solid var(--border);
   }
-  .footer {
-    text-align: center;
-    color: var(--sub);
-    font-size: .75rem;
-    margin-top: 32px;
+
+  /* ── Media plan table ── */
+  .plan-table { width: 100%; border-collapse: collapse; font-size: .88rem; }
+  .plan-table th {
+    text-align: right; color: var(--sub); font-weight: 600;
+    padding: 8px 12px; border-bottom: 1px solid var(--border); white-space: nowrap;
   }
+  .plan-table th:first-child { text-align: left; }
+  .plan-table td {
+    padding: 7px 12px; border-bottom: 1px solid #222;
+    text-align: right; white-space: nowrap;
+  }
+  .plan-table td:first-child { text-align: left; color: var(--text); }
+  .plan-table tr.section-header td {
+    background: #1f1f2e; color: var(--accent); font-weight: 600;
+    font-size: .8rem; letter-spacing: .04em; text-transform: uppercase;
+    padding: 6px 12px; text-align: left;
+  }
+  .plan-table .col-prev { color: #666; }
+  .plan-table .col-avg  { color: #888; }
+  .plan-table .col-tgt  { color: #aaa; }
+  .fact-green  { color: #4caf50 !important; font-weight: 700; }
+  .fact-orange { color: #ff9800 !important; font-weight: 700; }
+  .fact-red    { color: #f44336 !important; font-weight: 700; }
+  .fact-neutral { color: var(--text); font-weight: 700; }
+
+  .footer { text-align: center; color: var(--sub); font-size: .75rem; margin-top: 32px; }
 </style>
 </head>
 <body>
 
 <h1>📊 Money-Dick Dashboard</h1>
-<p class="subtitle">Обновлено: 27.07.2026 10:39 МСК</p>
+<p class="subtitle">Обновлено: 27.07.2026 12:22 МСК</p>
 
-<!-- Date filter -->
 <div class="filter-bar">
   <button class="preset-btn" data-preset="today">Сегодня</button>
   <button class="preset-btn" data-preset="7d">7 дней</button>
@@ -119,7 +114,6 @@
   <input type="date" id="dateTo">
 </div>
 
-<!-- Summary -->
 <div class="stat-row">
   <div class="stat"><div class="val" id="statTotal">—</div><div class="lbl">Всего лидов</div></div>
   <div class="stat"><div class="val" id="statPaid" style="color:var(--green)">—</div><div class="lbl">Оплатили</div></div>
@@ -127,41 +121,60 @@
 </div>
 
 <div class="charts">
+
   <div class="card">
     <h2>Лиды по дням</h2>
     <div style="position:relative;height:260px"><canvas id="dailyChart"></canvas></div>
   </div>
+
   <div class="card">
     <h2>Воронка: сколько лидов прошли через каждый этап</h2>
+    <div id="contentFilterBar" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px"></div>
     <div style="position:relative;height:420px"><canvas id="funnelChart"></canvas></div>
   </div>
+
   <div class="card">
     <h2>Распределение по UTM Source</h2>
     <div style="position:relative;height:300px"><canvas id="utmChart"></canvas></div>
   </div>
+
   <div class="card">
     <h2>Версия лендинга (MD A/B Variant)</h2>
     <div id="sourceFilterBar" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px"></div>
     <div style="position:relative;height:280px"><canvas id="versionChart"></canvas></div>
   </div>
+
+  <div class="card">
+    <h2>Медиаплан</h2>
+    <div style="overflow-x:auto">
+      <table class="plan-table">
+        <thead>
+          <tr>
+            <th style="min-width:200px;text-align:left">Показатель</th>
+            <th>Факт (прошлый)</th>
+            <th>Усредненный</th>
+            <th>Целевой</th>
+            <th>Факт</th>
+          </tr>
+        </thead>
+        <tbody id="planTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
 </div>
 
 <p class="footer">Данные из amoCRM · автообновление каждый час</p>
 
 <script>
-// ── Raw data embedded by Python ──────────────────────────────────────────────
-const ALL_LEADS   = [{"c":1784662767,"s":7,"u":"yt","v":"B"},{"c":1784752156,"s":1,"u":"fb","v":"A"},{"c":1784757592,"s":1,"u":"fb","v":"A"},{"c":1784767530,"s":7,"u":"yt","v":"B"},{"c":1784786094,"s":1,"u":"fb","v":"A"},{"c":1784788767,"s":1,"u":"fb","v":"A"},{"c":1784791774,"s":1,"u":"fb","v":"A"},{"c":1784787825,"s":7,"u":"fb","v":"B"},{"c":1784790853,"s":7,"u":"fb","v":"B"},{"c":1784781783,"s":5,"u":"fb","v":"A"},{"c":1784796385,"s":1,"u":"fb","v":"B"},{"c":1784794577,"s":5,"u":"fb","v":"B"},{"c":1784798093,"s":3,"u":"yt","v":"A"},{"c":1784804806,"s":1,"u":"fb","v":"B"},{"c":1784805066,"s":4,"u":"fb","v":"B"},{"c":1784806520,"s":1,"u":"fb","v":"A"},{"c":1784808861,"s":1,"u":"fb","v":"B"},{"c":1784810527,"s":6,"u":"fb","v":"B"},{"c":1784775964,"s":3,"u":"fb","v":"B"},{"c":1784820944,"s":1,"u":"fb","v":"B"},{"c":1784822189,"s":1,"u":"fb","v":"B"},{"c":1784822474,"s":1,"u":"fb","v":"B"},{"c":1784824048,"s":1,"u":"fb","v":"B"},{"c":1784825669,"s":1,"u":"fb","v":"B"},{"c":1784828234,"s":1,"u":"fb","v":"A"},{"c":1784822556,"s":4,"u":"shashkov_org","v":"B"},{"c":1784832271,"s":4,"u":"yt","v":"B"},{"c":1784848086,"s":5,"u":"fb","v":"B"},{"c":1784855310,"s":7,"u":"fb","v":"A"},{"c":1784857729,"s":3,"u":"fb","v":"A"},{"c":1784789178,"s":6,"u":"fb","v":"B"},{"c":1784864374,"s":7,"u":"fb","v":"A"},{"c":1784871176,"s":5,"u":"","v":"B"},{"c":1784878040,"s":1,"u":"fb","v":"B"},{"c":1784882118,"s":2,"u":"fb","v":"A"},{"c":1784885028,"s":5,"u":"fb","v":"A"},{"c":1784888346,"s":5,"u":"fb","v":"A"},{"c":1784890767,"s":5,"u":"yt","v":"A"},{"c":1784896057,"s":1,"u":"fb","v":"B"},{"c":1784896968,"s":1,"u":"fb","v":"A"},{"c":1784897388,"s":3,"u":"yt","v":"B"},{"c":1784899052,"s":1,"u":"fb","v":"B"},{"c":1784903385,"s":1,"u":"fb","v":"A"},{"c":1784905829,"s":1,"u":"yt","v":"B"},{"c":1784897343,"s":1,"u":"yt","v":"B"},{"c":1784907899,"s":1,"u":"fb","v":"A"},{"c":1784908377,"s":1,"u":"fb","v":"A"},{"c":1784904833,"s":12,"u":"fb","v":"A"},{"c":1784915848,"s":1,"u":"fb","v":"B"},{"c":1784918312,"s":1,"u":"fb","v":"B"},{"c":1784924632,"s":6,"u":"fb","v":"A"},{"c":1784939196,"s":9,"u":"fb","v":"B"},{"c":1784956852,"s":7,"u":"fb","v":"B"},{"c":1784959104,"s":1,"u":"fb","v":"B"},{"c":1784960620,"s":7,"u":"fb","v":"B"},{"c":1784965952,"s":5,"u":"fb","v":"A"},{"c":1784967697,"s":1,"u":"fb","v":"B"},{"c":1784968759,"s":1,"u":"fb","v":"B"},{"c":1784969477,"s":4,"u":"fb","v":"B"},{"c":1784975615,"s":7,"u":"fb","v":"A"},{"c":1784977428,"s":2,"u":"fb","v":"B"},{"c":1784980994,"s":1,"u":"fb","v":"B"},{"c":1784985575,"s":7,"u":"yt","v":"B"},{"c":1785003227,"s":1,"u":"fb","v":"B"},{"c":1784864709,"s":1,"u":"yt","v":"B"},{"c":1785037748,"s":5,"u":"fb","v":"B"},{"c":1785050829,"s":3,"u":"fb","v":"A"},{"c":1785055133,"s":1,"u":"fb","v":"A"},{"c":1784957646,"s":9,"u":"fb","v":"A"},{"c":1785056370,"s":1,"u":"fb","v":"A"},{"c":1785060580,"s":1,"u":"yt","v":"A"},{"c":1785074094,"s":1,"u":"fb","v":"B"},{"c":1785088863,"s":3,"u":"fb","v":"A"},{"c":1785090088,"s":1,"u":"fb","v":"A"},{"c":1784901689,"s":1,"u":"yt","v":"A"},{"c":1785092241,"s":1,"u":"fb","v":"B"},{"c":1785092118,"s":3,"u":"fb","v":"A"},{"c":1785092483,"s":3,"u":"fb","v":"B"},{"c":1785092572,"s":7,"u":"fb","v":"B"},{"c":1785080499,"s":9,"u":"yt","v":"A"},{"c":1785095463,"s":3,"u":"fb","v":"B"},{"c":1784912721,"s":1,"u":"fb","v":"A"},{"c":1785098239,"s":1,"u":"fb","v":"A"},{"c":1785098565,"s":1,"u":"fb","v":"B"},{"c":1785095542,"s":5,"u":"fb","v":"B"},{"c":1784829115,"s":9,"u":"yt","v":"A"},{"c":1785115125,"s":7,"u":"","v":"B"},{"c":1785125496,"s":1,"u":"fb","v":"B"},{"c":1785129836,"s":1,"u":"fb","v":"B"},{"c":1784784315,"s":1,"u":"fb","v":"A"},{"c":1785136696,"s":3,"u":"fb","v":"A"}];
+const ALL_LEADS   = [{"c":1784662767,"s":7,"u":"yt","t":"fvpkc_fimLk","v":"B"},{"c":1784752156,"s":1,"u":"fb","t":"{{ad.id}}","v":"A"},{"c":1784757592,"s":1,"u":"fb","t":"","v":"A"},{"c":1784767530,"s":7,"u":"yt","t":"fvpkc_fimLk","v":"B"},{"c":1784786094,"s":1,"u":"fb","t":"120250859318030071","v":"A"},{"c":1784788767,"s":1,"u":"fb","t":"120250859318030071","v":"A"},{"c":1784791774,"s":1,"u":"fb","t":"","v":"A"},{"c":1784787825,"s":7,"u":"fb","t":"","v":"B"},{"c":1784790853,"s":7,"u":"fb","t":"","v":"B"},{"c":1784781783,"s":5,"u":"fb","t":"120250859318030071","v":"A"},{"c":1784796385,"s":1,"u":"fb","t":"","v":"B"},{"c":1784794577,"s":5,"u":"fb","t":"120250859421980071","v":"B"},{"c":1784798093,"s":3,"u":"yt","t":"74ZYHn5V4Wo","v":"A"},{"c":1784804806,"s":1,"u":"fb","t":"120250859352380071","v":"B"},{"c":1784805066,"s":4,"u":"fb","t":"120250859318030071","v":"B"},{"c":1784806520,"s":1,"u":"fb","t":"120250856173680071","v":"A"},{"c":1784808861,"s":1,"u":"fb","t":"120250859352380071","v":"B"},{"c":1784810527,"s":6,"u":"fb","t":"120250859318030071","v":"B"},{"c":1784775964,"s":3,"u":"fb","t":"120250859318030071","v":"B"},{"c":1784820944,"s":1,"u":"fb","t":"","v":"B"},{"c":1784822189,"s":1,"u":"fb","t":"120250859352380071","v":"B"},{"c":1784822474,"s":1,"u":"fb","t":"120250859352360071","v":"B"},{"c":1784824048,"s":1,"u":"fb","t":"120250859352380071","v":"B"},{"c":1784825669,"s":1,"u":"fb","t":"120250856173680071","v":"B"},{"c":1784828234,"s":1,"u":"fb","t":"120250856173680071","v":"A"},{"c":1784822556,"s":4,"u":"shashkov_org","t":"kak-zarabatyvat-na-kripte-2026","v":"B"},{"c":1784832271,"s":4,"u":"yt","t":"9m1DphN7MhQ","v":"B"},{"c":1784848086,"s":5,"u":"fb","t":"120250859352380071","v":"B"},{"c":1784855310,"s":7,"u":"fb","t":"120250888901110071","v":"A"},{"c":1784857729,"s":3,"u":"fb","t":"120250888901180071","v":"A"},{"c":1784789178,"s":6,"u":"fb","t":"{{ad.id}}","v":"B"},{"c":1784864374,"s":7,"u":"fb","t":"120250859318030071","v":"A"},{"c":1784871176,"s":5,"u":"","t":"","v":"B"},{"c":1784878040,"s":1,"u":"fb","t":"120250859352380071","v":"B"},{"c":1784882118,"s":2,"u":"fb","t":"120250888901210071","v":"A"},{"c":1784885028,"s":5,"u":"fb","t":"120250859352380071","v":"A"},{"c":1784888346,"s":5,"u":"fb","t":"{{ad.id}}","v":"A"},{"c":1784890767,"s":5,"u":"yt","t":"87d0TKo407A","v":"A"},{"c":1784896057,"s":1,"u":"fb","t":"120250888140480071","v":"B"},{"c":1784896968,"s":1,"u":"fb","t":"120250859352380071","v":"A"},{"c":1784897388,"s":3,"u":"yt","t":"zKaCIGJtRCI","v":"B"},{"c":1784899052,"s":1,"u":"fb","t":"","v":"B"},{"c":1784903385,"s":1,"u":"fb","t":"","v":"A"},{"c":1784905829,"s":1,"u":"yt","t":"9m1DphN7MhQ","v":"B"},{"c":1784897343,"s":1,"u":"yt","t":"fvpkc_fimLk","v":"B"},{"c":1784907899,"s":1,"u":"fb","t":"120250859318030071","v":"A"},{"c":1784908377,"s":1,"u":"fb","t":"","v":"A"},{"c":1784904833,"s":12,"u":"fb","t":"120250888140500071","v":"A"},{"c":1784915848,"s":1,"u":"fb","t":"120250888901170071","v":"B"},{"c":1784918312,"s":1,"u":"fb","t":"","v":"B"},{"c":1784924632,"s":6,"u":"fb","t":"","v":"A"},{"c":1784939196,"s":9,"u":"fb","t":"120250888140500071","v":"B"},{"c":1784956852,"s":7,"u":"fb","t":"","v":"B"},{"c":1784959104,"s":1,"u":"fb","t":"","v":"B"},{"c":1784960620,"s":7,"u":"fb","t":"","v":"B"},{"c":1784965952,"s":5,"u":"fb","t":"120250859318030071","v":"A"},{"c":1784967697,"s":1,"u":"fb","t":"","v":"B"},{"c":1784968759,"s":1,"u":"fb","t":"","v":"B"},{"c":1784969477,"s":4,"u":"fb","t":"120250888901090071","v":"B"},{"c":1784975615,"s":7,"u":"fb","t":"120250888901180071","v":"A"},{"c":1784977428,"s":2,"u":"fb","t":"120250859318030071","v":"B"},{"c":1784980994,"s":1,"u":"fb","t":"120250888901170071","v":"B"},{"c":1784985575,"s":7,"u":"yt","t":"fvpkc_fimLk","v":"B"},{"c":1785003227,"s":1,"u":"fb","t":"","v":"B"},{"c":1784864709,"s":1,"u":"yt","t":"zKaCIGJtRCI","v":"B"},{"c":1785037748,"s":5,"u":"fb","t":"","v":"B"},{"c":1785050829,"s":3,"u":"fb","t":"120250888901170071","v":"A"},{"c":1785055133,"s":1,"u":"fb","t":"120250856173680071","v":"A"},{"c":1784957646,"s":9,"u":"fb","t":"","v":"A"},{"c":1785056370,"s":1,"u":"fb","t":"120250888901120071","v":"A"},{"c":1785060580,"s":1,"u":"yt","t":"fvpkc_fimLk","v":"A"},{"c":1785074094,"s":1,"u":"fb","t":"120250888140500071","v":"B"},{"c":1785088863,"s":3,"u":"fb","t":"120250856173680071","v":"A"},{"c":1785090088,"s":1,"u":"fb","t":"120250856173680071","v":"A"},{"c":1784901689,"s":1,"u":"yt","t":"CDBbclNkFpU","v":"A"},{"c":1785092241,"s":1,"u":"fb","t":"120250856173680071","v":"B"},{"c":1785092118,"s":3,"u":"fb","t":"120250856173680071","v":"A"},{"c":1785092483,"s":3,"u":"fb","t":"120250856173680071","v":"B"},{"c":1785092572,"s":7,"u":"fb","t":"120250856173680071","v":"B"},{"c":1785080499,"s":9,"u":"yt","t":"74ZYHn5V4Wo","v":"A"},{"c":1785095463,"s":3,"u":"fb","t":"120250859421980071","v":"B"},{"c":1784912721,"s":1,"u":"fb","t":"","v":"A"},{"c":1785098239,"s":1,"u":"fb","t":"120250856173680071","v":"A"},{"c":1785098565,"s":1,"u":"fb","t":"120250888140500071","v":"B"},{"c":1785095542,"s":5,"u":"fb","t":"120250888901170071","v":"B"},{"c":1784829115,"s":9,"u":"yt","t":"zKaCIGJtRCI","v":"A"},{"c":1785115125,"s":7,"u":"","t":"","v":"B"},{"c":1785125496,"s":1,"u":"fb","t":"120250856173680071","v":"B"},{"c":1785129836,"s":1,"u":"fb","t":"120250856173680071","v":"B"},{"c":1784784315,"s":1,"u":"fb","t":"120250859352360071","v":"A"},{"c":1785136696,"s":5,"u":"fb","t":"120250856173680071","v":"A"},{"c":1785139526,"s":1,"u":"fb","t":"120250856173680071","v":"B"},{"c":1785139733,"s":2,"u":"yt","t":"DAzHwXYjEwc","v":"B"},{"c":1785141181,"s":1,"u":"fb","t":"120250856173680071","v":"A"}];
 const STAGE_NAMES = ["Лид Создан", "Часть 1 открыта", "Часть 1 прочитана", "Часть 2 открыта", "Часть 2 прочитана", "Часть 3 открыта", "Часть 3 прочитана", "Увидел оффер", "Тариф выбран", "Checkout открыт", "Данные checkout отправлены", "Payment intent created", "Платёжная форма готова", "Оплата не прошла", "Оплачено", "Успешно реализовано"];
-const DATA_FROM   = 1753228800;  // earliest possible lead unix ts
+const DATA_FROM   = 1753228800;
 
-// ── Colors ───────────────────────────────────────────────────────────────────
 const C = {
-  purple: 'rgba(108,99,255,0.85)',
-  green:  'rgba(76,175,80,0.85)',
-  blue:   'rgba(33,150,243,0.85)',
-  orange: 'rgba(255,152,0,0.85)',
-  pink:   'rgba(233,30,99,0.85)',
-  teal:   'rgba(0,188,212,0.85)',
+  purple: 'rgba(108,99,255,0.85)', green:  'rgba(76,175,80,0.85)',
+  blue:   'rgba(33,150,243,0.85)', orange: 'rgba(255,152,0,0.85)',
+  pink:   'rgba(233,30,99,0.85)',  teal:   'rgba(0,188,212,0.85)',
 };
 const PALETTE = [C.purple, C.blue, C.green, C.orange, C.pink, C.teal,
   'rgba(255,235,59,.85)','rgba(121,85,72,.85)','rgba(96,125,139,.85)',
@@ -170,17 +183,15 @@ const PALETTE = [C.purple, C.blue, C.green, C.orange, C.pink, C.teal,
 Chart.defaults.color = '#888';
 Chart.defaults.borderColor = '#2a2a2a';
 
-// ── Chart instances ──────────────────────────────────────────────────────────
+// ── Chart instances ───────────────────────────────────────────────────────────
+
 const dailyChart = new Chart(document.getElementById('dailyChart'), {
   type: 'bar',
   data: { labels: [], datasets: [{ label: 'Лидов создано', data: [], backgroundColor: C.teal, borderRadius: 4 }] },
   options: {
     responsive: true, maintainAspectRatio: false,
     plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.y} лидов` } } },
-    scales: {
-      y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: '#2a2a2a' } },
-      x: { grid: { display: false } }
-    }
+    scales: { y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: '#2a2a2a' } }, x: { grid: { display: false } } }
   }
 });
 
@@ -212,160 +223,233 @@ const versionChart = new Chart(document.getElementById('versionChart'), {
     plugins: {
       legend: { position: 'right', labels: { color: '#e8e8e8', padding: 16 } },
       tooltip: { callbacks: { label: ctx => {
-        const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
-        return ` ${ctx.label}: ${ctx.parsed} лидов (${(ctx.parsed / total * 100).toFixed(1)}%)`;
+        const total = ctx.dataset.data.reduce((a,b) => a+b, 0);
+        return ` ${ctx.label}: ${ctx.parsed} лидов (${(ctx.parsed/total*100).toFixed(1)}%)`;
       } } }
     }
   }
 });
 
-// ── Filtering & rendering ────────────────────────────────────────────────────
+// ── State ─────────────────────────────────────────────────────────────────────
+let currentLeads  = [];
+let activeSource  = '__all__';
+let activeContent = '__all__';
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
 function toMidnightTs(dateStr) {
-  // dateStr: "YYYY-MM-DD", returns unix ts at 00:00:00 UTC+3
-  const [y, m, d] = dateStr.split('-').map(Number);
-  return Date.UTC(y, m - 1, d) / 1000 - 3 * 3600;
+  const [y,m,d] = dateStr.split('-').map(Number);
+  return Date.UTC(y, m-1, d) / 1000 - 3*3600;
 }
-
 function todayStr() {
-  return new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Moscow' });
+  return new Date().toLocaleDateString('sv-SE', {timeZone:'Europe/Moscow'});
 }
-
 function nDaysAgoStr(n) {
   const d = new Date();
   d.setDate(d.getDate() - n + 1);
-  return d.toLocaleDateString('sv-SE', { timeZone: 'Europe/Moscow' });
+  return d.toLocaleDateString('sv-SE', {timeZone:'Europe/Moscow'});
 }
-
-function applyFilter() {
-  const from = toMidnightTs(document.getElementById('dateFrom').value);
-  const toStr = document.getElementById('dateTo').value;
-  // end of day = next day 00:00 minus 1 sec
-  const to   = toMidnightTs(toStr) + 86399;
-  render(ALL_LEADS.filter(l => l.c >= from && l.c <= to));
-}
-
 function mskDate(ts) {
-  // Convert unix ts to YYYY-MM-DD in Moscow time (UTC+3)
-  const d = new Date((ts + 3 * 3600) * 1000);
-  return d.toISOString().slice(0, 10);
+  return new Date((ts + 3*3600)*1000).toISOString().slice(0,10);
 }
 
+// ── Filter buttons builder ────────────────────────────────────────────────────
+function buildFilterButtons(containerId, leads, keyFn, activeVal, onSelect) {
+  const values = [...new Set(leads.map(keyFn).filter(Boolean))].sort();
+  const bar = document.getElementById(containerId);
+  bar.innerHTML = '';
+  ['__all__', ...values].forEach(val => {
+    const btn = document.createElement('button');
+    btn.className = 'preset-btn' + (val === activeVal ? ' active' : '');
+    btn.textContent = val === '__all__' ? 'Все' : val;
+    btn.dataset.val = val;
+    btn.addEventListener('click', () => {
+      bar.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      onSelect(val);
+    });
+    bar.appendChild(btn);
+  });
+}
+
+// ── Main render ───────────────────────────────────────────────────────────────
 function render(leads) {
   currentLeads = leads;
-  buildSourceButtons(leads);
-  const n = leads.length;
 
   // Daily chart
   const dayMap = {};
-  leads.forEach(l => { const day = mskDate(l.c); dayMap[day] = (dayMap[day] || 0) + 1; });
+  leads.forEach(l => { const day = mskDate(l.c); dayMap[day] = (dayMap[day]||0) + 1; });
   const days = Object.keys(dayMap).sort();
-  dailyChart.data.labels = days.map(d => d.slice(5));  // show MM-DD
+  dailyChart.data.labels = days.map(d => d.slice(5));
   dailyChart.data.datasets[0].data = days.map(d => dayMap[d]);
   dailyChart.update();
 
-  // Funnel: for each stage i, count leads with status_idx >= i
-  const funnelData = STAGE_NAMES.map((_, i) => leads.filter(l => l.s >= i).length);
-  const paid = funnelData[funnelData.length - 1] || 0;
-
+  // Summary
+  const n = leads.length;
+  const paid = leads.filter(l => l.s >= 14).length;
   document.getElementById('statTotal').textContent = n;
   document.getElementById('statPaid').textContent  = paid;
-  document.getElementById('statConv').textContent  = n ? (paid / n * 100).toFixed(1) + '%' : '—';
+  document.getElementById('statConv').textContent  = n ? (paid/n*100).toFixed(1)+'%' : '—';
 
-  funnelChart.data.datasets[0].data = funnelData;
-  funnelChart.update();
-
-  // UTM Source
+  // UTM Source chart
   const utmMap = {};
-  leads.forEach(l => { utmMap[l.u || '(не указан)'] = (utmMap[l.u || '(не указан)'] || 0) + 1; });
-  const utmSorted = Object.entries(utmMap).sort((a, b) => b[1] - a[1]);
+  leads.forEach(l => { utmMap[l.u||'(не указан)'] = (utmMap[l.u||'(не указан)']||0)+1; });
+  const utmSorted = Object.entries(utmMap).sort((a,b) => b[1]-a[1]);
   utmChart.data.labels = utmSorted.map(e => e[0]);
   utmChart.data.datasets[0].data = utmSorted.map(e => e[1]);
-  utmChart.data.datasets[0].backgroundColor = utmSorted.map((_, i) => PALETTE[i % PALETTE.length]);
+  utmChart.data.datasets[0].backgroundColor = utmSorted.map((_,i) => PALETTE[i%PALETTE.length]);
   utmChart.update();
 
+  // UTM Content filter (funnel)
+  buildFilterButtons('contentFilterBar', leads, l => l.t, activeContent, val => {
+    activeContent = val;
+    renderFunnel(leads);
+  });
+  renderFunnel(leads);
+
+  // UTM Source filter (version chart)
+  buildFilterButtons('sourceFilterBar', leads, l => l.u, activeSource, val => {
+    activeSource = val;
+    renderVersionChart(leads);
+  });
   renderVersionChart(leads);
+
+  renderMediaPlan(leads);
 }
 
-// ── Preset buttons ───────────────────────────────────────────────────────────
+function renderFunnel(leads) {
+  const filtered = activeContent === '__all__'
+    ? leads
+    : leads.filter(l => l.t === activeContent);
+  const data = STAGE_NAMES.map((_,i) => filtered.filter(l => l.s >= i).length);
+  funnelChart.data.datasets[0].data = data;
+  funnelChart.update();
+}
+
+function renderVersionChart(leads) {
+  const filtered = activeSource === '__all__'
+    ? leads
+    : leads.filter(l => (l.u||'(не указан)') === activeSource);
+  const verMap = {'1 версия': 0, '2 версия': 0, 'Не определено': 0};
+  filtered.forEach(l => {
+    if (l.v === 'A')      verMap['1 версия']++;
+    else if (l.v === 'B') verMap['2 версия']++;
+    else                  verMap['Не определено']++;
+  });
+  const entries = Object.entries(verMap).filter(e => e[1] > 0);
+  versionChart.data.labels = entries.map(e => e[0]);
+  versionChart.data.datasets[0].data = entries.map(e => e[1]);
+  versionChart.data.datasets[0].backgroundColor = entries.map(e =>
+    e[0]==='1 версия' ? C.green : e[0]==='2 версия' ? C.blue : 'rgba(136,136,136,.85)'
+  );
+  versionChart.update();
+}
+
+// ── Media plan ────────────────────────────────────────────────────────────────
+const PLAN_ROWS = [
+  {section: 'Прогрев (статьи)'},
+  {label:'Регистрации',              key:'regs',      fmt:'n', prev:199,   avg:254,  tgt:313},
+  {label:'Конверсия в статью 1',     key:'conv1',     fmt:'%', prev:0.40,  avg:0.95, tgt:0.95},
+  {label:'Дочитали статью 1',        key:'read1',     fmt:'n', prev:79,    avg:241,  tgt:297},
+  {label:'Конверсия в статью 2',     key:'conv2',     fmt:'%', prev:1.13,  avg:0.70, tgt:0.70},
+  {label:'Дочитали статью 2',        key:'read2',     fmt:'n', prev:90,    avg:169,  tgt:208},
+  {label:'Конверсия в статью 3',     key:'conv3',     fmt:'%', prev:1.00,  avg:0.85, tgt:0.85},
+  {label:'Дочитали статью 3',        key:'read3',     fmt:'n', prev:90,    avg:143,  tgt:177},
+  {section: 'Продажи и конверсии'},
+  {label:'Конверсия в заказ',        key:'convOrder', fmt:'%', prev:0.038, avg:0.10, tgt:0.12},
+  {label:'Заказы',                   key:'orders',    fmt:'n', prev:3,     avg:14,   tgt:21},
+  {label:'Конверсия заказа в оплату',key:'convPay',   fmt:'%', prev:0.33,  avg:0.50, tgt:0.50},
+  {label:'Покупки AFK',              key:'purchases', fmt:'n', prev:1,     avg:7,    tgt:11},
+];
+
+function calcFact(leads) {
+  const regs   = leads.length;
+  const read1  = leads.filter(l => l.s >= 2).length;
+  const read2  = leads.filter(l => l.s >= 4).length;
+  const read3  = leads.filter(l => l.s >= 6).length;
+  const orders = leads.filter(l => l.s >= 12).length;
+  const purch  = leads.filter(l => l.s >= 14).length;
+  return {
+    regs, read1, read2, read3, orders, purchases: purch,
+    conv1:     regs   ? read1/regs   : null,
+    conv2:     read1  ? read2/read1  : null,
+    conv3:     read2  ? read3/read2  : null,
+    convOrder: read3  ? orders/read3 : null,
+    convPay:   orders ? purch/orders : null,
+  };
+}
+
+function fmtV(v, fmt) {
+  if (v === null || v === undefined) return '—';
+  return fmt === '%' ? (v*100).toFixed(1)+'%' : v;
+}
+
+function factCls(v, avg, tgt) {
+  if (v === null || v === undefined) return 'fact-neutral';
+  if (v >= tgt) return 'fact-green';
+  if (v >= avg) return 'fact-orange';
+  return 'fact-red';
+}
+
+function renderMediaPlan(leads) {
+  const fact = calcFact(leads);
+  const tbody = document.getElementById('planTableBody');
+  tbody.innerHTML = '';
+  PLAN_ROWS.forEach(row => {
+    const tr = document.createElement('tr');
+    if (row.section) {
+      tr.className = 'section-header';
+      tr.innerHTML = `<td colspan="5">${row.section}</td>`;
+    } else {
+      const fv = fact[row.key];
+      tr.innerHTML = `
+        <td>${row.label}</td>
+        <td class="col-prev">${fmtV(row.prev, row.fmt)}</td>
+        <td class="col-avg">${fmtV(row.avg,  row.fmt)}</td>
+        <td class="col-tgt">${fmtV(row.tgt,  row.fmt)}</td>
+        <td class="${factCls(fv, row.avg, row.tgt)}">${fmtV(fv, row.fmt)}</td>`;
+    }
+    tbody.appendChild(tr);
+  });
+}
+
+// ── Date presets ──────────────────────────────────────────────────────────────
+function applyFilter() {
+  const from  = toMidnightTs(document.getElementById('dateFrom').value);
+  const toVal = toMidnightTs(document.getElementById('dateTo').value) + 86399;
+  render(ALL_LEADS.filter(l => l.c >= from && l.c <= toVal));
+}
+
 document.querySelectorAll('.preset-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     const today = todayStr();
-    const preset = btn.dataset.preset;
-    if (preset === 'today') {
+    const p = btn.dataset.preset;
+    if (p === 'today') {
       document.getElementById('dateFrom').value = today;
       document.getElementById('dateTo').value   = today;
-    } else if (preset === '7d') {
+    } else if (p === '7d') {
       document.getElementById('dateFrom').value = nDaysAgoStr(7);
       document.getElementById('dateTo').value   = today;
-    } else if (preset === '30d') {
+    } else if (p === '30d') {
       document.getElementById('dateFrom').value = nDaysAgoStr(30);
       document.getElementById('dateTo').value   = today;
     } else {
-      // All time — from DATA_FROM
       const d = new Date(DATA_FROM * 1000);
-      document.getElementById('dateFrom').value = d.toLocaleDateString('sv-SE', { timeZone: 'Europe/Moscow' });
+      document.getElementById('dateFrom').value = d.toLocaleDateString('sv-SE', {timeZone:'Europe/Moscow'});
       document.getElementById('dateTo').value   = today;
     }
     applyFilter();
   });
 });
 
-// Manual date change clears preset highlight
-['dateFrom', 'dateTo'].forEach(id => {
+['dateFrom','dateTo'].forEach(id => {
   document.getElementById(id).addEventListener('change', () => {
     document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
     applyFilter();
   });
 });
 
-// ── Source filter for version chart ─────────────────────────────────────────
-let activeSource = '__all__';
-
-function buildSourceButtons(leads) {
-  const sources = [...new Set(leads.map(l => l.u || '(не указан)'))].sort();
-  const bar = document.getElementById('sourceFilterBar');
-  bar.innerHTML = '';
-
-  ['__all__', ...sources].forEach(src => {
-    const btn = document.createElement('button');
-    btn.className = 'preset-btn' + (src === activeSource ? ' active' : '');
-    btn.textContent = src === '__all__' ? 'Все источники' : src;
-    btn.dataset.src = src;
-    btn.addEventListener('click', () => {
-      activeSource = src;
-      bar.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      renderVersionChart(currentLeads);
-    });
-    bar.appendChild(btn);
-  });
-}
-
-let currentLeads = [];
-
-function renderVersionChart(leads) {
-  const filtered = activeSource === '__all__'
-    ? leads
-    : leads.filter(l => (l.u || '(не указан)') === activeSource);
-
-  const verMap = { '1 версия': 0, '2 версия': 0, 'Не определено': 0 };
-  filtered.forEach(l => {
-    if (l.v === 'A')      verMap['1 версия']++;
-    else if (l.v === 'B') verMap['2 версия']++;
-    else                  verMap['Не определено']++;
-  });
-  const verEntries = Object.entries(verMap).filter(e => e[1] > 0);
-  versionChart.data.labels = verEntries.map(e => e[0]);
-  versionChart.data.datasets[0].data = verEntries.map(e => e[1]);
-  versionChart.data.datasets[0].backgroundColor = verEntries.map(e =>
-    e[0] === '1 версия' ? C.green : e[0] === '2 версия' ? C.blue : 'rgba(136,136,136,.85)'
-  );
-  versionChart.update();
-}
-
-// ── Init: trigger "30 days" preset ──────────────────────────────────────────
 document.querySelector('[data-preset="30d"]').click();
 </script>
 </body>
