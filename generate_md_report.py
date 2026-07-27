@@ -372,8 +372,10 @@ function mskDate(ts) {{
 }}
 
 // ── Filter buttons builder ────────────────────────────────────────────────────
-function buildFilterButtons(containerId, leads, keyFn, activeVal, onSelect) {{
-  const values = [...new Set(leads.map(keyFn).filter(Boolean))].sort();
+function buildFilterButtons(containerId, leads, keyFn, activeVal, onSelect, minCount = 0) {{
+  const counts = {{}};
+  leads.forEach(l => {{ const k = keyFn(l); if (k) counts[k] = (counts[k]||0)+1; }});
+  const values = Object.keys(counts).filter(k => counts[k] >= minCount).sort();
   const bar = document.getElementById(containerId);
   bar.innerHTML = '';
   ['__all__', ...values].forEach(val => {{
@@ -422,7 +424,7 @@ function render(leads) {{
   buildFilterButtons('contentFilterBar', leads, l => l.t, activeContent, val => {{
     activeContent = val;
     renderFunnel(leads);
-  }});
+  }}, 5);
   renderFunnel(leads);
 
   // UTM Source filter (version chart)
