@@ -203,6 +203,44 @@ def build_html(leads_raw):
   .stat .val {{ font-size: 2rem; font-weight: 700; color: var(--accent); }}
   .stat .lbl {{ font-size: .8rem; color: var(--sub); margin-top: 4px; }}
 
+  /* ── Media plan table ── */
+  .mp-wrap {{ max-width: 1000px; margin: 0 auto 28px; }}
+  .mp-wrap h2 {{ font-size: 1rem; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }}
+  .mp-table {{ width: 100%; border-collapse: collapse; font-size: .88rem; }}
+  .mp-table th {{
+    background: #111;
+    color: var(--sub);
+    font-weight: 600;
+    text-align: right;
+    padding: 8px 12px;
+    white-space: nowrap;
+  }}
+  .mp-table th:first-child {{ text-align: left; }}
+  .mp-table td {{
+    padding: 7px 12px;
+    text-align: right;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }}
+  .mp-table td:first-child {{ text-align: left; color: var(--text); }}
+  .mp-table tr:last-child td {{ border-bottom: none; }}
+  .mp-table .section-hdr td {{
+    background: #161616;
+    color: var(--sub);
+    font-size: .78rem;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    padding: 5px 12px;
+    border-bottom: 1px solid var(--border);
+  }}
+  .mp-table .col-prev {{ color: #666; }}
+  .mp-table .col-avg  {{ color: #888; }}
+  .mp-table .col-tgt  {{ color: #aaa; }}
+  .mp-table .col-fact {{ font-weight: 700; color: var(--text); }}
+  .mp-table .fact-good {{ color: var(--green) !important; }}
+  .mp-table .fact-warn {{ color: var(--orange) !important; }}
+  .mp-table .fact-bad  {{ color: #f44336 !important; }}
+
   /* ── Charts ── */
   .charts {{ display: flex; flex-direction: column; gap: 28px; max-width: 1000px; margin: 0 auto; }}
   .card {{
@@ -224,6 +262,46 @@ def build_html(leads_raw):
     font-size: .75rem;
     margin-top: 32px;
   }}
+
+  /* ── Media plan table ── */
+  .plan-table {{
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .88rem;
+  }}
+  .plan-table th {{
+    text-align: center;
+    color: var(--sub);
+    font-weight: 600;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }}
+  .plan-table th:first-child {{ text-align: left; }}
+  .plan-table td {{
+    padding: 7px 12px;
+    border-bottom: 1px solid #222;
+    text-align: center;
+    white-space: nowrap;
+  }}
+  .plan-table td:first-child {{ text-align: left; color: var(--text); }}
+  .plan-table tr.section-header td {{
+    background: #1f1f2e;
+    color: var(--accent);
+    font-weight: 600;
+    font-size: .8rem;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    padding: 6px 12px;
+    text-align: left;
+  }}
+  .plan-table .col-prev  {{ color: var(--sub); }}
+  .plan-table .col-avg   {{ color: var(--sub); }}
+  .plan-table .col-tgt   {{ color: var(--sub); }}
+  .plan-table .fact-green  {{ color: #4caf50; font-weight: 700; }}
+  .plan-table .fact-orange {{ color: #ff9800; font-weight: 700; }}
+  .plan-table .fact-red    {{ color: #f44336; font-weight: 700; }}
+  .plan-table .fact-neutral {{ color: var(--text); font-weight: 700; }}
 </style>
 </head>
 <body>
@@ -250,6 +328,23 @@ def build_html(leads_raw):
   <div class="stat"><div class="val" id="statConv" style="color:var(--orange)">—</div><div class="lbl">Конверсия в оплату</div></div>
 </div>
 
+<!-- Media plan table -->
+<div class="mp-wrap card">
+  <h2>Медиаплан</h2>
+  <table class="mp-table">
+    <thead>
+      <tr>
+        <th>Показатель</th>
+        <th>Факт (прошлый)</th>
+        <th>Усредненный</th>
+        <th>Целевой</th>
+        <th>Факт</th>
+      </tr>
+    </thead>
+    <tbody id="mpBody"></tbody>
+  </table>
+</div>
+
 <div class="charts">
   <div class="card">
     <h2>Лиды по дням</h2>
@@ -268,6 +363,25 @@ def build_html(leads_raw):
     <div id="sourceFilterBar" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px"></div>
     <div style="position:relative;height:280px"><canvas id="versionChart"></canvas></div>
   </div>
+
+  <div class="card">
+    <h2>Медиаплан</h2>
+    <div style="overflow-x:auto">
+      <table class="plan-table">
+        <thead>
+          <tr>
+            <th style="width:42%">Показатель</th>
+            <th>Факт (прошлый)</th>
+            <th>Усредненный</th>
+            <th>Целевой</th>
+            <th>Факт</th>
+          </tr>
+        </thead>
+        <tbody id="planTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
 </div>
 
 <p class="footer">Данные из amoCRM · автообновление каждый час</p>
@@ -368,6 +482,81 @@ function applyFilter() {{
   render(ALL_LEADS.filter(l => l.c >= from && l.c <= to));
 }}
 
+// ── Media plan static data ───────────────────────────────────────────────────
+const MP_PREV = {{
+  reg: 199, conv1: 0.40, read1: 79,
+  conv2: 1.13, read2: 90, conv3: 1.00, read3: 90,
+  convOrder: 0.038, orders: 3,
+  convPay: 0.33, purchases: 1,
+}};
+const MP_AVG = {{
+  reg: 254, conv1: 0.95, read1: 241,
+  conv2: 0.70, read2: 169, conv3: 0.85, read3: 143,
+  convOrder: 0.10, orders: 14,
+  convPay: 0.50, purchases: 7,
+}};
+const MP_TGT = {{
+  reg: 313, conv1: 0.95, read1: 297,
+  conv2: 0.70, read2: 208, conv3: 0.85, read3: 177,
+  convOrder: 0.12, orders: 21,
+  convPay: 0.50, purchases: 11,
+}};
+
+function fmtN(n)   {{ return n == null ? '—' : String(n); }}
+function fmtPct(r) {{ return r == null ? '—' : (r * 100).toFixed(1) + '%'; }}
+function factClass(val, avg, isHigherBetter = true) {{
+  if (val == null || avg == null || avg === 0) return 'col-fact';
+  const ratio = val / avg;
+  if (isHigherBetter) {{
+    if (ratio >= 1.0) return 'col-fact fact-good';
+    if (ratio >= 0.8) return 'col-fact fact-warn';
+    return 'col-fact fact-bad';
+  }} else {{
+    if (ratio <= 1.0) return 'col-fact fact-good';
+    if (ratio <= 1.2) return 'col-fact fact-warn';
+    return 'col-fact fact-bad';
+  }}
+}}
+
+function renderMediaPlan(leads) {{
+  const reg    = leads.length;
+  const read1  = leads.filter(l => l.s >= 2).length;
+  const read2  = leads.filter(l => l.s >= 4).length;
+  const read3  = leads.filter(l => l.s >= 6).length;
+  const orders = leads.filter(l => l.s >= 12).length;
+  const purch  = leads.filter(l => l.s >= 14).length;
+
+  const conv1      = reg    ? read1  / reg    : null;
+  const conv2      = read1  ? read2  / read1  : null;
+  const conv3      = read2  ? read3  / read2  : null;
+  const convOrder  = read3  ? orders / read3  : null;
+  const convPay    = orders ? purch  / orders : null;
+
+  const rows = [
+    {{ label: 'Регистрации',             prev: fmtN(MP_PREV.reg),       avg: fmtN(MP_AVG.reg),       tgt: fmtN(MP_TGT.reg),       fact: fmtN(reg),            cls: factClass(reg, MP_AVG.reg) }},
+    {{ label: 'Конверсия в статью 1',    prev: fmtPct(MP_PREV.conv1),   avg: fmtPct(MP_AVG.conv1),   tgt: fmtPct(MP_TGT.conv1),   fact: fmtPct(conv1),        cls: factClass(conv1, MP_AVG.conv1) }},
+    {{ label: 'Дочитали статью 1',       prev: fmtN(MP_PREV.read1),     avg: fmtN(MP_AVG.read1),     tgt: fmtN(MP_TGT.read1),     fact: fmtN(read1),          cls: factClass(read1, MP_AVG.read1) }},
+    {{ label: 'Конверсия в статью 2',    prev: fmtPct(MP_PREV.conv2),   avg: fmtPct(MP_AVG.conv2),   tgt: fmtPct(MP_TGT.conv2),   fact: fmtPct(conv2),        cls: factClass(conv2, MP_AVG.conv2) }},
+    {{ label: 'Дочитали статью 2',       prev: fmtN(MP_PREV.read2),     avg: fmtN(MP_AVG.read2),     tgt: fmtN(MP_TGT.read2),     fact: fmtN(read2),          cls: factClass(read2, MP_AVG.read2) }},
+    {{ label: 'Конверсия в статью 3',    prev: fmtPct(MP_PREV.conv3),   avg: fmtPct(MP_AVG.conv3),   tgt: fmtPct(MP_TGT.conv3),   fact: fmtPct(conv3),        cls: factClass(conv3, MP_AVG.conv3) }},
+    {{ label: 'Дочитали статью 3',       prev: fmtN(MP_PREV.read3),     avg: fmtN(MP_AVG.read3),     tgt: fmtN(MP_TGT.read3),     fact: fmtN(read3),          cls: factClass(read3, MP_AVG.read3) }},
+    {{ label: 'Конверсия в заказ',       prev: fmtPct(MP_PREV.convOrder),avg: fmtPct(MP_AVG.convOrder),tgt: fmtPct(MP_TGT.convOrder),fact: fmtPct(convOrder),  cls: factClass(convOrder, MP_AVG.convOrder) }},
+    {{ label: 'Заказы',                  prev: fmtN(MP_PREV.orders),    avg: fmtN(MP_AVG.orders),    tgt: fmtN(MP_TGT.orders),    fact: fmtN(orders),         cls: factClass(orders, MP_AVG.orders) }},
+    {{ label: 'Конверсия заказа в оплату',prev: fmtPct(MP_PREV.convPay),avg: fmtPct(MP_AVG.convPay), tgt: fmtPct(MP_TGT.convPay), fact: fmtPct(convPay),      cls: factClass(convPay, MP_AVG.convPay) }},
+    {{ label: 'Покупки AFK',             prev: fmtN(MP_PREV.purchases), avg: fmtN(MP_AVG.purchases), tgt: fmtN(MP_TGT.purchases), fact: fmtN(purch),          cls: factClass(purch, MP_AVG.purchases) }},
+  ];
+
+  document.getElementById('mpBody').innerHTML = rows.map(r =>
+    `<tr>
+      <td>${{r.label}}</td>
+      <td class="col-prev">${{r.prev}}</td>
+      <td class="col-avg">${{r.avg}}</td>
+      <td class="col-tgt">${{r.tgt}}</td>
+      <td class="${{r.cls}}">${{r.fact}}</td>
+    </tr>`
+  ).join('');
+}}
+
 function mskDate(ts) {{
   // Convert unix ts to YYYY-MM-DD in Moscow time (UTC+3)
   const d = new Date((ts + 3 * 3600) * 1000);
@@ -408,6 +597,7 @@ function render(leads) {{
   utmChart.update();
 
   renderVersionChart(leads);
+  renderMediaPlan(leads);
 }}
 
 // ── Preset buttons ───────────────────────────────────────────────────────────
@@ -487,6 +677,82 @@ function renderVersionChart(leads) {{
     e[0] === '1 версия' ? C.green : e[0] === '2 версия' ? C.blue : 'rgba(136,136,136,.85)'
   );
   versionChart.update();
+}}
+
+// ── Media plan table ─────────────────────────────────────────────────────────
+const PLAN_STATIC = [
+  {{ section: 'Прогрев (статьи)' }},
+  {{ label: 'Регистрации',            key: 'regs',      fmt: 'n', prev: 199,  avg: 254, tgt: 313 }},
+  {{ label: 'Конверсия в статью 1',   key: 'conv1',     fmt: '%', prev: 0.40, avg: 0.95, tgt: 0.95 }},
+  {{ label: 'Дочитали статью 1',      key: 'read1',     fmt: 'n', prev: 79,   avg: 241, tgt: 297 }},
+  {{ label: 'Конверсия в статью 2',   key: 'conv2',     fmt: '%', prev: 1.13, avg: 0.70, tgt: 0.70 }},
+  {{ label: 'Дочитали статью 2',      key: 'read2',     fmt: 'n', prev: 90,   avg: 169, tgt: 208 }},
+  {{ label: 'Конверсия в статью 3',   key: 'conv3',     fmt: '%', prev: 1.00, avg: 0.85, tgt: 0.85 }},
+  {{ label: 'Дочитали статью 3',      key: 'read3',     fmt: 'n', prev: 90,   avg: 143, tgt: 177 }},
+  {{ section: 'Продажи и конверсии' }},
+  {{ label: 'Конверсия в заказ',        key: 'convOrder', fmt: '%', prev: 0.038, avg: 0.10, tgt: 0.12 }},
+  {{ label: 'Заказы',                   key: 'orders',    fmt: 'n', prev: 3,    avg: 14,  tgt: 21 }},
+  {{ label: 'Конверсия заказа в оплату',key: 'convPay',   fmt: '%', prev: 0.33, avg: 0.50, tgt: 0.50 }},
+  {{ label: 'Покупки AFK',              key: 'purchases', fmt: 'n', prev: 1,    avg: 7,   tgt: 11 }},
+];
+
+function calcPlanFact(leads) {{
+  const regs   = leads.length;
+  const read1  = leads.filter(l => l.s >= 2).length;
+  const read2  = leads.filter(l => l.s >= 4).length;
+  const read3  = leads.filter(l => l.s >= 6).length;
+  const orders = leads.filter(l => l.s >= 12).length;
+  const purch  = leads.filter(l => l.s >= 14).length;
+  return {{
+    regs,
+    conv1:     regs   ? read1  / regs   : null,
+    read1,
+    conv2:     read1  ? read2  / read1  : null,
+    read2,
+    conv3:     read2  ? read3  / read2  : null,
+    read3,
+    convOrder: read3  ? orders / read3  : null,
+    orders,
+    convPay:   orders ? purch  / orders : null,
+    purchases: purch,
+  }};
+}}
+
+function fmtVal(v, fmt) {{
+  if (v === null || v === undefined) return '—';
+  if (fmt === '%') return (v * 100).toFixed(1) + '%';
+  return v;
+}}
+
+function factClass(fact, avg, tgt, fmt) {{
+  const f = fmt === '%' ? fact : fact;
+  if (f === null || f === undefined) return 'fact-neutral';
+  if (f >= tgt) return 'fact-green';
+  if (f >= avg) return 'fact-orange';
+  return 'fact-red';
+}}
+
+function renderMediaPlan(leads) {{
+  const fact = calcPlanFact(leads);
+  const tbody = document.getElementById('planTableBody');
+  tbody.innerHTML = '';
+  PLAN_STATIC.forEach(row => {{
+    const tr = document.createElement('tr');
+    if (row.section) {{
+      tr.className = 'section-header';
+      tr.innerHTML = `<td colspan="5">${{row.section}}</td>`;
+    }} else {{
+      const fv = fact[row.key];
+      const cls = factClass(fv, row.avg, row.tgt, row.fmt);
+      tr.innerHTML = `
+        <td>${{row.label}}</td>
+        <td class="col-prev">${{fmtVal(row.prev, row.fmt)}}</td>
+        <td class="col-avg">${{fmtVal(row.avg, row.fmt)}}</td>
+        <td class="col-tgt">${{fmtVal(row.tgt, row.fmt)}}</td>
+        <td class="${{cls}}">${{fmtVal(fv, row.fmt)}}</td>`;
+    }}
+    tbody.appendChild(tr);
+  }});
 }}
 
 // ── Init: trigger "30 days" preset ──────────────────────────────────────────
