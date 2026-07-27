@@ -252,6 +252,10 @@ def build_html(leads_raw):
 
 <div class="charts">
   <div class="card">
+    <h2>Лиды по дням</h2>
+    <div style="position:relative;height:260px"><canvas id="dailyChart"></canvas></div>
+  </div>
+  <div class="card">
     <h2>Воронка: сколько лидов прошли через каждый этап</h2>
     <div style="position:relative;height:420px"><canvas id="funnelChart"></canvas></div>
   </div>
@@ -291,6 +295,19 @@ Chart.defaults.color = '#888';
 Chart.defaults.borderColor = '#2a2a2a';
 
 // ── Chart instances ──────────────────────────────────────────────────────────
+const dailyChart = new Chart(document.getElementById('dailyChart'), {{
+  type: 'bar',
+  data: {{ labels: [], datasets: [{{ label: 'Лидов создано', data: [], backgroundColor: C.teal, borderRadius: 4 }}] }},
+  options: {{
+    responsive: true, maintainAspectRatio: false,
+    plugins: {{ legend: {{ display: false }}, tooltip: {{ callbacks: {{ label: ctx => ` ${{ctx.parsed.y}} лидов` }} }} }},
+    scales: {{
+      y: {{ beginAtZero: true, ticks: {{ precision: 0 }}, grid: {{ color: '#2a2a2a' }} }},
+      x: {{ grid: {{ display: false }} }}
+    }}
+  }}
+}});
+
 const funnelChart = new Chart(document.getElementById('funnelChart'), {{
   type: 'bar',
   data: {{ labels: STAGE_NAMES, datasets: [{{ label: 'Лидов прошло через этап', data: [], backgroundColor: C.purple, borderRadius: 4 }}] }},
@@ -351,10 +368,24 @@ function applyFilter() {{
   render(ALL_LEADS.filter(l => l.c >= from && l.c <= to));
 }}
 
+function mskDate(ts) {{
+  // Convert unix ts to YYYY-MM-DD in Moscow time (UTC+3)
+  const d = new Date((ts + 3 * 3600) * 1000);
+  return d.toISOString().slice(0, 10);
+}}
+
 function render(leads) {{
   currentLeads = leads;
   buildSourceButtons(leads);
   const n = leads.length;
+
+  // Daily chart
+  const dayMap = {{}};
+  leads.forEach(l => {{ const day = mskDate(l.c); dayMap[day] = (dayMap[day] || 0) + 1; }});
+  const days = Object.keys(dayMap).sort();
+  dailyChart.data.labels = days.map(d => d.slice(5));  // show MM-DD
+  dailyChart.data.datasets[0].data = days.map(d => dayMap[d]);
+  dailyChart.update();
 
   // Funnel: for each stage i, count leads with status_idx >= i
   const funnelData = STAGE_NAMES.map((_, i) => leads.filter(l => l.s >= i).length);
