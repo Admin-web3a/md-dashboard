@@ -470,11 +470,11 @@ const PLAN_ROWS = [
   {{section: 'Прогрев (статьи)'}},
   {{label:'Регистрации',              key:'regs',      fmt:'n', prev:199,   avg:254,  tgt:313}},
   {{label:'Конверсия в статью 1',     key:'conv1',     fmt:'%', prev:0.40,  avg:0.95, tgt:0.95}},
-  {{label:'Дочитали статью 1',        key:'read1',     fmt:'n', prev:79,    avg:241,  tgt:297}},
+  {{label:'Открыли статью 1',         key:'open1',     fmt:'n', prev:79,    avg:241,  tgt:297}},
   {{label:'Конверсия в статью 2',     key:'conv2',     fmt:'%', prev:1.13,  avg:0.70, tgt:0.70}},
-  {{label:'Дочитали статью 2',        key:'read2',     fmt:'n', prev:90,    avg:169,  tgt:208}},
+  {{label:'Открыли статью 2',         key:'open2',     fmt:'n', prev:90,    avg:169,  tgt:208}},
   {{label:'Конверсия в статью 3',     key:'conv3',     fmt:'%', prev:1.00,  avg:0.85, tgt:0.85}},
-  {{label:'Дочитали статью 3',        key:'read3',     fmt:'n', prev:90,    avg:143,  tgt:177}},
+  {{label:'Открыли статью 3',         key:'open3',     fmt:'n', prev:90,    avg:143,  tgt:177}},
   {{section: 'Продажи и конверсии'}},
   {{label:'Конверсия в заказ',        key:'convOrder', fmt:'%', prev:0.038, avg:0.10, tgt:0.12}},
   {{label:'Заказы',                   key:'orders',    fmt:'n', prev:3,     avg:14,   tgt:21}},
@@ -484,17 +484,17 @@ const PLAN_ROWS = [
 
 function calcFact(leads) {{
   const regs   = leads.length;
-  const read1  = leads.filter(l => l.s >= 2).length;
-  const read2  = leads.filter(l => l.s >= 4).length;
-  const read3  = leads.filter(l => l.s >= 6).length;
-  const orders = leads.filter(l => l.s >= 12).length;
-  const purch  = leads.filter(l => l.s >= 14).length;
+  const open1  = leads.filter(l => l.s >= 1).length;   // Часть 1 открыта
+  const open2  = leads.filter(l => l.s >= 3).length;   // Часть 2 открыта
+  const open3  = leads.filter(l => l.s >= 5).length;   // Часть 3 открыта
+  const orders = leads.filter(l => l.s >= 12).length;  // Платёжная форма готова
+  const purch  = leads.filter(l => l.s >= 14).length;  // Оплачено
   return {{
-    regs, read1, read2, read3, orders, purchases: purch,
-    conv1:     regs   ? read1/regs   : null,
-    conv2:     read1  ? read2/read1  : null,
-    conv3:     read2  ? read3/read2  : null,
-    convOrder: read3  ? orders/read3 : null,
+    regs, open1, open2, open3, orders, purchases: purch,
+    conv1:     regs   ? open1/regs   : null,
+    conv2:     open1  ? open2/open1  : null,
+    conv3:     open2  ? open3/open2  : null,
+    convOrder: open3  ? orders/open3 : null,
     convPay:   orders ? purch/orders : null,
   }};
 }}
