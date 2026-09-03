@@ -247,7 +247,12 @@ def build_html(leads_raw):
   </div>
 
   <div class="card">
-    <h2>Воронка: сколько лидов прошли через каждый этап</h2>
+    <h2>Оплаты по дням</h2>
+    <div style="position:relative;height:260px"><canvas id="paidChart"></canvas></div>
+  </div>
+
+  <div class="card">
+   <h2>Воронка: сколько лидов прошли через каждый этап</h2>
     <div id="contentFilterBar" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px"></div>
     <div style="position:relative;height:420px"><canvas id="funnelChart"></canvas></div>
   </div>
@@ -310,6 +315,16 @@ const dailyChart = new Chart(document.getElementById('dailyChart'), {{
   options: {{
     responsive: true, maintainAspectRatio: false,
     plugins: {{ legend: {{ display: false }}, tooltip: {{ callbacks: {{ label: ctx => ` ${{ctx.parsed.y}} лидов` }} }} }},
+    scales: {{ y: {{ beginAtZero: true, ticks: {{ precision: 0 }}, grid: {{ color: '#2a2a2a' }} }}, x: {{ grid: {{ display: false }} }} }}
+  }}
+}});
+
+const paidChart = new Chart(document.getElementById('paidChart'), {{
+  type: 'bar',
+  data: {{ labels: [], datasets: [{{ label: 'Оплат', data: [], backgroundColor: C.green, borderRadius: 4 }}] }},
+  options: {{
+    responsive: true, maintainAspectRatio: false,
+    plugins: {{ legend: {{ display: false }}, tooltip: {{ callbacks: {{ label: ctx => ` ${{ctx.parsed.y}} оплат` }} }} }},
     scales: {{ y: {{ beginAtZero: true, ticks: {{ precision: 0 }}, grid: {{ color: '#2a2a2a' }} }}, x: {{ grid: {{ display: false }} }} }}
   }}
 }});
@@ -396,13 +411,20 @@ function buildFilterButtons(containerId, leads, keyFn, activeVal, onSelect, minC
 function render(leads) {{
   currentLeads = leads;
 
-  // Daily chart
+  // Daily leads chart
   const dayMap = {{}};
   leads.forEach(l => {{ const day = mskDate(l.c); dayMap[day] = (dayMap[day]||0) + 1; }});
   const days = Object.keys(dayMap).sort();
   dailyChart.data.labels = days.map(d => d.slice(5));
   dailyChart.data.datasets[0].data = days.map(d => dayMap[d]);
   dailyChart.update();
+
+  // Daily paid chart
+  const paidMap = {{}};
+  leads.filter(l => l.s >= 14).forEach(l => {{ const day = mskDate(l.c); paidMap[day] = (paidMap[day]||0) + 1; }});
+  paidChart.data.labels = days.map(d => d.slice(5));
+  paidChart.data.datasets[0].data = days.map(d => paidMap[d] || 0);
+  paidChart.update();
 
   // Summary
   const n = leads.length;
