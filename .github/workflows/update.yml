@@ -1,9 +1,9 @@
-name: Update Money-Dick Dashboard
+name: Update MD Dashboard
 
 on:
   schedule:
-    - cron: "0 * * * *"   # every hour
-  workflow_dispatch:        # manual trigger
+    - cron: "0 * * * *"
+  workflow_dispatch:
 
 permissions:
   contents: write
