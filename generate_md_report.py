@@ -372,6 +372,8 @@ const versionChart = new Chart(document.getElementById('versionChart'), {{
 let currentLeads  = [];
 let activeSource  = '__all__';
 let activeContent = '__all__';
+let filterFromTs  = DATA_FROM;
+let filterToTs    = Math.floor(Date.now()/1000);
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function toMidnightTs(dateStr) {{
@@ -415,13 +417,13 @@ function buildFilterButtons(containerId, leads, keyFn, activeVal, onSelect, minC
 function render(leads) {{
   currentLeads = leads;
 
-  // Daily leads chart — показываем все дни от DATA_FROM до сегодня, даже нулевые
+  // Daily leads chart — все дни в пределах текущего фильтра, нулевые включительно
   const dayMap = {{}};
   leads.forEach(l => {{ const day = mskDate(l.c); dayMap[day] = (dayMap[day]||0) + 1; }});
-  const startDay = mskDate(DATA_FROM);
-  const todayDay = todayStr();
+  const startDay = mskDate(filterFromTs);
+  const endDay   = mskDate(filterToTs);
   const days = [];
-  for (let d = new Date(startDay + 'T00:00:00Z'); d.toISOString().slice(0,10) <= todayDay; d.setUTCDate(d.getUTCDate()+1)) {{
+  for (let d = new Date(startDay + 'T00:00:00Z'); d.toISOString().slice(0,10) <= endDay; d.setUTCDate(d.getUTCDate()+1)) {{
     days.push(d.toISOString().slice(0,10));
   }}
   dailyChart.data.labels = days.map(d => d.slice(5));
@@ -572,9 +574,9 @@ function renderMediaPlan(leads) {{
 
 // ── Date presets ──────────────────────────────────────────────────────────────
 function applyFilter() {{
-  const from  = toMidnightTs(document.getElementById('dateFrom').value);
-  const toVal = toMidnightTs(document.getElementById('dateTo').value) + 86399;
-  render(ALL_LEADS.filter(l => l.c >= from && l.c <= toVal));
+  filterFromTs = toMidnightTs(document.getElementById('dateFrom').value);
+  filterToTs   = toMidnightTs(document.getElementById('dateTo').value) + 86399;
+  render(ALL_LEADS.filter(l => l.c >= filterFromTs && l.c <= filterToTs));
 }}
 
 document.querySelectorAll('.preset-btn').forEach(btn => {{
