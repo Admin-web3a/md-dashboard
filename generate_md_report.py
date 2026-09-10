@@ -104,6 +104,7 @@ def build_lead_record(lead):
         "u": get_custom_field(lead, UTM_SOURCE_FIELD_ID) or "",        # utm_source
         "t": get_custom_field(lead, UTM_CONTENT_FIELD_ID) or "",       # utm_content
         "v": get_custom_field(lead, MD_AB_VARIANT_FIELD_ID) or "",     # A/B variant
+        "p": lead.get("price") or 0,                                   # budget (price field)
     }
 
 
@@ -237,6 +238,7 @@ def build_html(leads_raw):
   <div class="stat"><div class="val" id="statTotal">—</div><div class="lbl">Всего лидов</div></div>
   <div class="stat"><div class="val" id="statPaid" style="color:var(--green)">—</div><div class="lbl">Оплатили</div></div>
   <div class="stat"><div class="val" id="statConv" style="color:var(--orange)">—</div><div class="lbl">Конверсия в оплату</div></div>
+  <div class="stat"><div class="val" id="statRev" style="color:var(--green)">—</div><div class="lbl">Выручка</div></div>
 </div>
 
 <div class="charts">
@@ -421,17 +423,19 @@ function render(leads) {{
 
   // Daily paid chart
   const paidMap = {{}};
-  leads.filter(l => l.s >= 14).forEach(l => {{ const day = mskDate(l.c); paidMap[day] = (paidMap[day]||0) + 1; }});
+  leads.filter(l => l.s >= 15).forEach(l => {{ const day = mskDate(l.c); paidMap[day] = (paidMap[day]||0) + 1; }});
   paidChart.data.labels = days.map(d => d.slice(5));
   paidChart.data.datasets[0].data = days.map(d => paidMap[d] || 0);
   paidChart.update();
 
   // Summary
-  const n = leads.length;
-  const paid = leads.filter(l => l.s >= 14).length;
+  const n    = leads.length;
+  const paid = leads.filter(l => l.s >= 15).length;  // Успешно реализовано
+  const rev  = leads.filter(l => l.s >= 15).reduce((a, l) => a + (l.p || 0), 0);
   document.getElementById('statTotal').textContent = n;
   document.getElementById('statPaid').textContent  = paid;
   document.getElementById('statConv').textContent  = n ? (paid/n*100).toFixed(1)+'%' : '—';
+  document.getElementById('statRev').textContent   = rev ? rev.toLocaleString('ru-RU') + ' ₽' : '—';
 
   // UTM Source chart
   const utmMap = {{}};
@@ -510,7 +514,7 @@ function calcFact(leads) {{
   const open2  = leads.filter(l => l.s >= 3).length;   // Часть 2 открыта
   const open3  = leads.filter(l => l.s >= 5).length;   // Часть 3 открыта
   const orders = leads.filter(l => l.s >= 12).length;  // Платёжная форма готова
-  const purch  = leads.filter(l => l.s >= 14).length;  // Оплачено
+  const purch  = leads.filter(l => l.s >= 15).length;  // Успешно реализовано
   return {{
     regs, open1, open2, open3, orders, purchases: purch,
     conv1:     regs   ? open1/regs   : null,
