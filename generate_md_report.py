@@ -11,6 +11,7 @@ import urllib.request
 import json
 import os
 import datetime
+import re
 
 # ── Config ─────────────────────────────────────────────────────────────────────
 
@@ -51,6 +52,12 @@ EXCLUDED_STATUSES = {
     143,       # Закрыто и не реализовано
 }
 
+# Статусы «оплачено» (для поиска суммы в заметках)
+PAID_STATUS_IDS = {sid for sid, _ in FUNNEL_STAGES if STATUS_INDEX[sid] >= 14}
+
+# До этой даты (10 сент 2026 00:00 МСК) ищем цену в заметках AMO event:paid
+NOTES_CUTOFF = 1788987600
+
 # ── AMO helpers ────────────────────────────────────────────────────────────────
 
 def amo_get(path, params=None):
@@ -61,6 +68,23 @@ def amo_get(path, params=None):
     req = urllib.request.Request(url, headers={"Authorization": f"Bearer {TOKEN}"})
     with urllib.request.urlopen(req) as resp:
         return json.loads(resp.read())
+
+
+def fetch_price_from_notes(lead_id):
+    """Для исторических сделок без price — ищем amount в заметке 'event: paid'."""
+    try:
+        data = amo_get(f"/api/v4/leads/{lead_id}/notes", {"limit": 100})
+        best = 0.0
+        for note in (data.get("_embedded") or {}).get("notes", []):
+            text = ((note.get("params") or {}).get("text") or "")
+            if "event: paid" not in text:
+                continue
+            m = re.search(r"amount:\s*([\d.]+)", text)
+            if m and float(m.group(1)) > best:
+                best = float(m.group(1))
+        return int(best)
+    except Exception:
+        return 0
 
 
 def fetch_all_leads():
@@ -98,13 +122,18 @@ def build_lead_record(lead):
     status_idx = STATUS_INDEX.get(lead.get("status_id"))
     if status_idx is None:
         return None
+    price = lead.get("price") or 0
+    # Исторические оплаченные сделки без суммы — ищем в заметках AMO
+    if price == 0 and lead.get("status_id") in PAID_STATUS_IDS \
+            and lead.get("created_at", 0) < NOTES_CUTOFF:
+        price = fetch_price_from_notes(lead["id"])
     return {
         "c": lead.get("created_at", 0),                               # created_at unix ts
         "s": status_idx,                                               # funnel stage index
         "u": get_custom_field(lead, UTM_SOURCE_FIELD_ID) or "",        # utm_source
         "t": get_custom_field(lead, UTM_CONTENT_FIELD_ID) or "",       # utm_content
         "v": get_custom_field(lead, MD_AB_VARIANT_FIELD_ID) or "",     # A/B variant
-        "p":  lead.get("price") or 0,                                  # budget (price field)
+        "p":  price,                                                   # цена (price или из заметки)
         "d":  lead.get("closed_at") or 0,                              # closed_at (won date)
         "ua": lead.get("updated_at") or 0,                             # updated_at (fallback)
     }
