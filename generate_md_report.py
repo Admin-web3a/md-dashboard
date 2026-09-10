@@ -167,6 +167,7 @@ def build_html(leads_raw):
     --accent: #6c63ff;
     --green:  #4caf50;
     --orange: #ff9800;
+    --blue:   #42a5f5;
   }}
   * {{ box-sizing: border-box; margin: 0; padding: 0; }}
   body {{
@@ -270,6 +271,8 @@ def build_html(leads_raw):
   <div class="stat"><div class="val" id="statPaid" style="color:var(--green)">—</div><div class="lbl">Оплатили</div></div>
   <div class="stat"><div class="val" id="statConv" style="color:var(--orange)">—</div><div class="lbl">Конверсия в оплату</div></div>
   <div class="stat"><div class="val" id="statRev" style="color:var(--green)">—</div><div class="lbl">Выручка</div></div>
+  <div class="stat"><div class="val" id="statAvgCycle" style="color:var(--blue)">—</div><div class="lbl">Средний цикл</div></div>
+  <div class="stat"><div class="val" id="statMedCycle" style="color:var(--blue)">—</div><div class="lbl">Медиана цикла</div></div>
 </div>
 
 <div class="charts">
@@ -282,6 +285,12 @@ def build_html(leads_raw):
   <div class="card">
     <h2>Оплаты по дням</h2>
     <div style="position:relative;height:260px"><canvas id="paidChart"></canvas></div>
+  </div>
+
+  <div class="card">
+    <h2>Цикл сделки: от регистрации до оплаты</h2>
+    <div id="cycleStats" style="font-size:13px;color:var(--sub);margin-bottom:10px"></div>
+    <div style="position:relative;height:260px"><canvas id="cycleChart"></canvas></div>
   </div>
 
   <div class="card">
@@ -359,6 +368,31 @@ const paidChart = new Chart(document.getElementById('paidChart'), {{
     responsive: true, maintainAspectRatio: false,
     plugins: {{ legend: {{ display: false }}, tooltip: {{ callbacks: {{ label: ctx => ` ${{ctx.parsed.y}} оплат` }} }} }},
     scales: {{ y: {{ beginAtZero: true, ticks: {{ precision: 0 }}, grid: {{ color: '#2a2a2a' }} }}, x: {{ grid: {{ display: false }} }} }}
+  }}
+}});
+
+const CYCLE_BUCKETS = [
+  {{ label: '< 1 ч',   min: 0,   max: 1    }},
+  {{ label: '1–6 ч',   min: 1,   max: 6    }},
+  {{ label: '6–24 ч',  min: 6,   max: 24   }},
+  {{ label: '1–3 д',   min: 24,  max: 72   }},
+  {{ label: '3–7 д',   min: 72,  max: 168  }},
+  {{ label: '7–30 д',  min: 168, max: 720  }},
+];
+
+const cycleChart = new Chart(document.getElementById('cycleChart'), {{
+  type: 'bar',
+  data: {{
+    labels: CYCLE_BUCKETS.map(b => b.label),
+    datasets: [{{ label: 'Оплат', data: new Array(CYCLE_BUCKETS.length).fill(0),
+      backgroundColor: C.blue, borderRadius: 4 }}]
+  }},
+  options: {{
+    responsive: true, maintainAspectRatio: false,
+    plugins: {{ legend: {{ display: false }},
+      tooltip: {{ callbacks: {{ label: ctx => ` ${{ctx.parsed.y}} оплат` }} }} }},
+    scales: {{ y: {{ beginAtZero: true, ticks: {{ precision: 0 }}, grid: {{ color: '#2a2a2a' }} }},
+               x: {{ grid: {{ display: false }} }} }}
   }}
 }});
 
@@ -469,6 +503,46 @@ function render(leads) {{
   paidChart.data.labels = days.map(d => d.slice(5));
   paidChart.data.datasets[0].data = days.map(d => paidMap[d] || 0);
   paidChart.update();
+
+  // Cycle chart — цикл сделки в часах
+  (function() {{
+    const rawCycles = [];
+    leads.filter(l => l.s >= 14).forEach(l => {{
+      const ts = l.d > 0 ? l.d : l.ua;
+      const h = (ts - l.c) / 3600;
+      if (h > 0) rawCycles.push(h);
+    }});
+    // Аномалии > 30 дней (720 ч): игнорируем, если их < 5%
+    const over = rawCycles.filter(h => h > 720).length;
+    const cycles = (over / (rawCycles.length || 1) < 0.05)
+      ? rawCycles.filter(h => h <= 720)
+      : rawCycles;
+    // Среднее и медиана
+    function fmtH(h) {{
+      if (h === null || isNaN(h)) return '—';
+      return h < 24 ? h.toFixed(1) + ' ч' : (h/24).toFixed(1) + ' д';
+    }}
+    const avg = cycles.length ? cycles.reduce((a,b)=>a+b,0)/cycles.length : null;
+    const sorted = [...cycles].sort((a,b)=>a-b);
+    const med = sorted.length ? (sorted.length%2===0
+      ? (sorted[sorted.length/2-1]+sorted[sorted.length/2])/2
+      : sorted[Math.floor(sorted.length/2)]) : null;
+    document.getElementById('statAvgCycle').textContent = fmtH(avg);
+    document.getElementById('statMedCycle').textContent = fmtH(med);
+    // Подпись под заголовком графика
+    const note = over > 0 && over/rawCycles.length < 0.05
+      ? `Исключено ${{over}} сд. > 30 дней (< 5%)`  : '';
+    document.getElementById('cycleStats').textContent =
+      cycles.length ? `${{cycles.length}} оплат · среднее ${{fmtH(avg)}} · медиана ${{fmtH(med)}}${{note ? '  |  ' + note : ''}}` : 'Нет данных';
+    // Гистограмма
+    const buckets = new Array(CYCLE_BUCKETS.length).fill(0);
+    cycles.forEach(h => {{
+      const i = CYCLE_BUCKETS.findIndex(b => h >= b.min && h < b.max);
+      if (i >= 0) buckets[i]++;
+    }});
+    cycleChart.data.datasets[0].data = buckets;
+    cycleChart.update();
+  }})();
 
   // Summary
   const n    = leads.length;
