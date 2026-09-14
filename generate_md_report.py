@@ -191,6 +191,13 @@ def build_html(leads_raw):
   }}
   .preset-btn:hover {{ border-color: var(--accent); color: var(--text); }}
   .preset-btn.active {{ border-color: var(--accent); color: var(--accent); background: #1e1b3a; }}
+  .src-btn {{
+    background: var(--card); border: 1px solid var(--border);
+    color: var(--sub); border-radius: 6px; padding: 5px 12px;
+    font-size: .82rem; cursor: pointer; transition: border-color .15s, color .15s;
+  }}
+  .src-btn:hover {{ border-color: #4caf50; color: var(--text); }}
+  .src-btn.active {{ border-color: #4caf50; color: #4caf50; background: #1a2e1a; }}
   .date-sep {{ color: var(--sub); font-size: .85rem; }}
   input[type=date] {{
     background: var(--card); border: 1px solid var(--border);
@@ -264,6 +271,11 @@ def build_html(leads_raw):
   <input type="date" id="dateFrom">
   <span class="date-sep">—</span>
   <input type="date" id="dateTo">
+</div>
+
+<div class="filter-bar" style="margin-top:-18px;margin-bottom:20px;justify-content:flex-start;padding-left:8px">
+  <span class="date-sep" style="white-space:nowrap">UTM Source:</span>
+  <div id="globalSourceBar" style="display:flex;flex-wrap:wrap;gap:6px"></div>
 </div>
 
 <div class="stat-row">
@@ -432,11 +444,12 @@ const versionChart = new Chart(document.getElementById('versionChart'), {{
 }});
 
 // ── State ─────────────────────────────────────────────────────────────────────
-let currentLeads  = [];
-let activeSource  = '__all__';
-let activeContent = '__all__';
-let filterFromTs  = DATA_FROM;
-let filterToTs    = Math.floor(Date.now()/1000);
+let currentLeads      = [];
+let activeSource      = '__all__';
+let activeContent     = '__all__';
+let activeGlobalSrc   = '__all__';
+let filterFromTs      = DATA_FROM;
+let filterToTs        = Math.floor(Date.now()/1000);
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function toMidnightTs(dateStr) {{
@@ -675,11 +688,42 @@ function renderMediaPlan(leads) {{
   }});
 }}
 
+// ── UTM Source global filter ──────────────────────────────────────────────────
+function buildGlobalSourceFilter() {{
+  const counts = {{}};
+  ALL_LEADS.forEach(l => {{
+    const k = l.u || '(не указан)';
+    counts[k] = (counts[k] || 0) + 1;
+  }});
+  const bar = document.getElementById('globalSourceBar');
+  bar.innerHTML = '';
+  const sources = ['__all__', ...Object.keys(counts).sort((a,b) => counts[b]-counts[a])];
+  sources.forEach(src => {{
+    const btn = document.createElement('button');
+    btn.className = 'src-btn' + (src === activeGlobalSrc ? ' active' : '');
+    btn.textContent = src === '__all__'
+      ? `Все (${{ALL_LEADS.length}})`
+      : `${{src}} (${{counts[src]}})`;
+    btn.dataset.src = src;
+    btn.addEventListener('click', () => {{
+      bar.querySelectorAll('.src-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeGlobalSrc = src;
+      applyFilter();
+    }});
+    bar.appendChild(btn);
+  }});
+}}
+
 // ── Date presets ──────────────────────────────────────────────────────────────
 function applyFilter() {{
   filterFromTs = toMidnightTs(document.getElementById('dateFrom').value);
   filterToTs   = toMidnightTs(document.getElementById('dateTo').value) + 86399;
-  render(ALL_LEADS.filter(l => l.c >= filterFromTs && l.c <= filterToTs));
+  let filtered = ALL_LEADS.filter(l => l.c >= filterFromTs && l.c <= filterToTs);
+  if (activeGlobalSrc !== '__all__') {{
+    filtered = filtered.filter(l => (l.u || '(не указан)') === activeGlobalSrc);
+  }}
+  render(filtered);
 }}
 
 document.querySelectorAll('.preset-btn').forEach(btn => {{
@@ -713,6 +757,7 @@ document.querySelectorAll('.preset-btn').forEach(btn => {{
   }});
 }});
 
+buildGlobalSourceFilter();
 document.querySelector('[data-preset="30d"]').click();
 </script>
 </body>
